@@ -147,7 +147,7 @@ void SlimCLI::SentBytes( int b ){
 }
 
 bool SlimCLI::SendCommand( QByteArray c ){
-    DEBUGF("");
+    DEBUGF("Command sent" << c);
     // NOTE:: SendCommand assumes that the command string has been filled in and already been put in URL escape form
     // and that a MAC address is at the beginning of the command (if needed only!!)
     if( !c.isNull() )

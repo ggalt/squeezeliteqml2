@@ -43,6 +43,7 @@ void AudioPlayer::Init(QQuickItem *v)
         mySettings->setValue("Version", DATAVERSION);
         mySettings->setValue("Server/Address","127.0.0.1");
 //        mySettings->setValue("Server/Address","10.6.67.54");
+//        mySettings->setValue("Server/Address","192.168.1.50");
         mySettings->setValue("Server/AudioPort","3483");
         mySettings->setValue("Server/CLIPort", "9090");
         mySettings->setValue("Server/HttpPort", "9000");
