@@ -15,13 +15,15 @@ QML_IMPORT_PATH =
 SOURCES += main.cpp \
     slimcli.cpp \
     music.cpp \
-    audioplayer.cpp
+    audioplayer.cpp \
+    devicestatus.cpp
 
 HEADERS += \
     squeezedefines.h \
     slimcli.h \
     music.h \
-    audioplayer.h
+    audioplayer.h \
+    devicestatus.h
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)

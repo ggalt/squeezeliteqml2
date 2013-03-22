@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QString>
 #include <QByteArray>
+#include <QQuickItem>
 
 #include "squeezedefines.h"
 #include "slimcli.h"
@@ -17,7 +18,7 @@ public:
     explicit AudioPlayer(QObject *parent = 0);
     ~AudioPlayer();
 
-    void Init(void);
+    void Init(QQuickItem *v);
     void Close(void);
     
 signals:
@@ -41,6 +42,7 @@ public slots:
     void volDown(void);
 
 private:
+    void initInterface(void);
     void getplayerMACAddress(void);
 
 private:
@@ -57,6 +59,8 @@ private:
 
     QProcess *player;
     SlimCLI *cli;
+
+    QQuickItem *viewer;
 };
 
 #endif // AUDIOPLAYER_H

@@ -33,8 +33,10 @@ void AudioPlayer::Close(void)
     }
 }
 
-void AudioPlayer::Init(void)
+void AudioPlayer::Init(QQuickItem *v)
 {
+    viewer = v;     // connection so that we can manipulate it later and update the interface
+
     QSettings *mySettings = new QSettings("squeezelitegui", "squeezelitegui");
 
     if( !mySettings->contains("Version") || mySettings->value("Version")!=DATAVERSION) {     // no settings file, so create one
@@ -82,6 +84,7 @@ void AudioPlayer::Init(void)
     //    // initialize the CLI interface.  Make sure that you've set the appropriate server address and port
     cli = new SlimCLI(this, "cli", SqueezeBoxServerAddress, MacAddress, SqueezeBoxServerCLIPort.toInt());
     cli->Init();
+    initInterface();
 }
 
 void AudioPlayer::shuffleState(int state)
@@ -121,6 +124,11 @@ void AudioPlayer::volUp(void)
 void AudioPlayer::volDown(void)
 {
     cli->SendCommand(QByteArray("button voldown\n"));
+}
+
+void AudioPlayer::initInterface(void)
+{
+
 }
 
 void AudioPlayer::getplayerMACAddress( void )

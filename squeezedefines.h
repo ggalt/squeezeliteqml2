@@ -110,6 +110,23 @@ enum ResumeMode
 };
 
 
+class TrackData
+{
+public:
+    QByteArray playlist_index;
+    QByteArray title;
+    QByteArray genre;
+    QByteArray artist;
+    QByteArray album;
+    QByteArray tracknum;
+    QByteArray year;
+    QByteArray duration;
+    QByteArray coverid;
+    QByteArray album_id;
+};
+
+typedef QList< TrackData > CurrentPlayList;
+
 //QDataStream & operator<< (QDataStream& stream, const Album& al);
 //QDataStream & operator>> (QDataStream& stream, Album& al);
 

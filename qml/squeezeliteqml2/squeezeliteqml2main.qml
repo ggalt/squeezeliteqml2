@@ -383,15 +383,12 @@ Rectangle {
         }
 
         Rectangle {
-            id: controlRect
-            x: 0
-            width: 2000
-            color: "#ffffff"
-            clip: false
+            id: controlWindow
+            width: 400
             gradient: Gradient {
                 GradientStop {
                     position: 0
-                    color: "#51cfa7"
+                    color: "#00c4a3"
                 }
 
                 GradientStop {
@@ -399,11 +396,169 @@ Rectangle {
                     color: "#000000"
                 }
             }
+            anchors.left: parent.left
+            anchors.leftMargin: 0
             anchors.bottom: parent.bottom
             anchors.bottomMargin: 0
             anchors.top: parent.top
             anchors.topMargin: 0
-            z: -1
+
+            Rectangle {
+                id: controlRect
+                x: 0
+                width: 2000
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0
+                        color: "#000000"
+                    }
+
+                    GradientStop {
+                        position: 1
+                        color: "#008f62"
+                    }
+                }
+                clip: false
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 0
+                anchors.top: parent.top
+                anchors.topMargin: 50
+                z: -1
+
+                ListView {
+                    id: controlList
+                    width: 400
+                    snapMode: ListView.SnapToItem
+                    anchors.left: parent.left
+                    anchors.leftMargin: 0
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 0
+                    anchors.top: parent.top
+                    anchors.topMargin: 0
+                    z: 5
+                    delegate: Item {
+                        x: 5
+                        height: 40
+                        Row {
+                            id: row1
+                            spacing: 10
+                            Rectangle {
+                                width: 40
+                                height: 40
+                                color: colorCode
+                            }
+
+                            Text {
+                                text: name
+                                anchors.verticalCenter: parent.verticalCenter
+                                font.bold: true
+                            }
+                        }
+                    }
+                    model: ListModel {
+                        ListElement {
+                            name: "Grey"
+                            colorCode: "grey"
+                        }
+
+                        ListElement {
+                            name: "Red"
+                            colorCode: "red"
+                        }
+
+                        ListElement {
+                            name: "Blue"
+                            colorCode: "blue"
+                        }
+
+                        ListElement {
+                            name: "Green"
+                            colorCode: "green"
+                        }
+                    }
+                }
+            }
+
+            Rectangle {
+                id: controlBar
+                height: 50
+                gradient: Gradient {
+                    GradientStop {
+                        position: 0
+                        color: "#000000"
+                    }
+
+                    GradientStop {
+                        position: 0.44
+                        color: "#00000000"
+                    }
+
+                    GradientStop {
+                        position: 1
+                        color: "#ffffff"
+                    }
+                }
+                border.width: 0
+                z: 1
+                border.color: "#000000"
+                anchors.right: parent.right
+                anchors.rightMargin: 0
+                anchors.left: parent.left
+                anchors.leftMargin: 0
+                anchors.top: parent.top
+                anchors.topMargin: 0
+
+                Rectangle {
+                    id: homeBtn
+                    width: 40
+                    color: "#00000000"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 5
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 5
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+
+                    Image {
+                        id: homeImage
+                        anchors.fill: parent
+                        source: "icons/home.png"
+                    }
+
+                    MouseArea {
+                        id: homeMouseArea
+                        x: 0
+                        y: 0
+                        anchors.fill: parent
+                    }
+                }
+
+                Rectangle {
+                    id: returnBtn
+                    x: 235
+                    width: 40
+                    color: "#00000000"
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 5
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+                    anchors.right: parent.right
+                    anchors.rightMargin: 5
+
+                    Image {
+                        id: returnImage
+                        anchors.fill: parent
+                        source: "icons/leftArrow.png"
+                    }
+
+                    MouseArea {
+                        id: returnMousearea
+                        x: 0
+                        y: 0
+                        anchors.fill: parent
+                        }
+                }
+            }
         }
     }
 }

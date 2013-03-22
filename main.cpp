@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     QQuickItem *v = viewer.rootObject();
 
     AudioPlayer *p = new AudioPlayer(0);
-    p->Init();
+    p->Init(v);
 /*
  *  signal shuffle(int state)
     signal repeat(int state)
