@@ -40,8 +40,8 @@ public:
     void Init( void );
     void Connect( void );
 
-    bool SendCommand( QByteArray cmd );
     bool SendBlockingCommand( QByteArray cmd );
+    bool SendBlockingCommand( QByteArray cmd, QByteArray mac );
     QByteArray GetBlockingCommandResponse( QByteArray cmd );    // send a blocking command and get the response back
 
     QByteArray GetResponse( void ) { return response; }
@@ -81,7 +81,11 @@ signals:
     void cliInfo( QString msg );
     void FinishedInitializingDevices( void );
 
+    void DeviceStatusMessage(QByteArray msg);
+
 public slots:
+    bool SendCommand( QByteArray cmd );
+    bool SendCommand( QByteArray cmd, QByteArray mac );
 
 private:
     QTcpSocket *slimCliSocket;// socket for CLI interface

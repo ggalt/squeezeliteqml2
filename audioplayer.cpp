@@ -1,5 +1,6 @@
 #include <QList>
 #include <QListIterator>
+#include <QHashIterator>
 #include <QNetworkInterface>
 #include <QQmlContext>
 
@@ -83,8 +84,21 @@ void AudioPlayer::Init(QQuickView *v)
 
 
     //    // initialize the CLI interface.  Make sure that you've set the appropriate server address and port
-    cli = new SlimCLI(this, "cli", SqueezeBoxServerAddress, MacAddress, SqueezeBoxServerCLIPort.toInt());
+    cli = new SlimCLI(this, "cli", SqueezeBoxServerAddress, encodedMacAddress, SqueezeBoxServerCLIPort.toInt());
+    connect(cli,SIGNAL(isConnected()),this,SLOT(cliConnected()));
+
+    dev = new DeviceStatus(this);
+    connect(dev,SIGNAL(issueCommand(QByteArray)),
+            cli,SLOT(SendCommand(QByteArray)));    // so device can send messages
+    connect(cli,SIGNAL(DeviceStatusMessage(QByteArray)),
+            dev,SLOT(processDeviceStatusMsg(QByteArray)));  // so cli can send message to device
     cli->Init();
+}
+
+void AudioPlayer::cliConnected(void)
+{
+    DEBUGF("cliConnected Slot");
+    dev->Init();
     initInterface();
 }
 
@@ -132,14 +146,23 @@ void AudioPlayer::controlViewClicked(int idx)
     DEBUGF('control view clicked with name:' << idx);
 }
 
-void AudioPlayer::controlViewClicked(void)
+void AudioPlayer::controlViewClicked(QString itemClicked)
 {
-    DEBUGF("control view clicked with name:");
+    DEBUGF("control view clicked with name:" << itemClicked);
+    if(itemClicked=="Music") {
+        loadMusicScreen();
+    }
+    else if (itemClicked=="Home") {
+        loadHomeScreen();
+    }
+    else if(itemClicked=="NowPlaying") {
+        loadNowPlayingScreen();
+    }
 }
 
 void AudioPlayer::initInterface(void)
 {
-    DEBUGF("");
+    DEBUGF("Initialize Interface");
     loadHomeScreen();
     viewer->setSource(QUrl::fromLocalFile("qml/squeezeliteqml2/squeezeliteqml2main.qml"));
 
@@ -149,21 +172,97 @@ void AudioPlayer::initInterface(void)
     connect(v,SIGNAL(prevTrack()), this,SLOT(prevTrackClicked()));
     connect(v,SIGNAL(volUp()), this,SLOT(volUp()));
     connect(v,SIGNAL(volDown()), this,SLOT(volDown()));
-    connect(v,SIGNAL(controlClicked()), this,SLOT(controlViewClicked()));
+    connect(v,SIGNAL(controlClicked(QString)), this,SLOT(controlViewClicked(QString)));
 
     viewer->show();
 }
 
 void AudioPlayer::loadHomeScreen(void)
 {
-      ListModel *model = new ListModel(new ControlListItem, this);
-      model->appendRow(new ControlListItem("Music", QSize(30,350), QString("http://127.0.0.1:9000/html/images/artists_40x40.png"), model));
-      model->appendRow(new ControlListItem("Internet Radio", QSize(30,350), QString("http://127.0.0.1:9000/plugins/cache/icons/radiomusic_40x40.png"), model));
-      model->appendRow(new ControlListItem("My Apps", QSize(30,350), QString("http://127.0.0.1:9000/plugins/AppGallery/html/images/icon_40x40.png"), model));
-      model->appendRow(new ControlListItem("Favorites", QSize(30,350), QString("http://127.0.0.1:9000/html/images/favorites_40x40.png"), model));
-      model->appendRow(new ControlListItem("Extras", QSize(30,350), QString("http://127.0.0.1:9000/html/images/alarm_40x40.png"), model));
+    if( !controlHierarchy.contains("Home")) {
+        ListModel *model = new ListModel(new ControlListItem, this);
+        model->appendRow(new ControlListItem("Music", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/artists_40x40.png"), model));
+        model->appendRow(new ControlListItem("Internet Radio", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/plugins/cache/icons/radiomusic_40x40.png"), model));
+        model->appendRow(new ControlListItem("My Apps", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/plugins/AppGallery/html/images/icon_40x40.png"), model));
+        model->appendRow(new ControlListItem("Favorites", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/favorites_40x40.png"), model));
+        model->appendRow(new ControlListItem("Extras", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/alarm_40x40.png"), model));
+        controlHierarchy.insert("Home", model);
+        viewer->rootContext()->setContextProperty("controlListModel", model);
+    }
+    else {
+        viewer->rootContext()->setContextProperty("controlListModel", controlHierarchy["Home"]);
+    }
 
-      viewer->rootContext()->setContextProperty("controlListModel", model);
+
+}
+
+void AudioPlayer::loadMusicScreen(void)
+{
+    if( !controlHierarchy.contains("MusicScreen")) {
+        ListModel *model = new ListModel(new ControlListItem, this);
+        model->appendRow(new ControlListItem("Artists", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/artists_40x40.png"), model));
+        model->appendRow(new ControlListItem("Albums", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/albums_40x40.png"), model));
+        model->appendRow(new ControlListItem("Genres", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/genres_40x40.png"), model));
+        model->appendRow(new ControlListItem("Years", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/years_40x40.png"), model));
+        model->appendRow(new ControlListItem("New Music", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/newmusic_40x40.png"), model));
+        model->appendRow(new ControlListItem("Random Mix", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/plugins/RandomPlay/html/images/icon_40x40.png"), model));
+        model->appendRow(new ControlListItem("Music Folder", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/musicfolder_40x40.png"), model));
+        model->appendRow(new ControlListItem("Playlists", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/playlists_40x40.png"), model));
+        model->appendRow(new ControlListItem("Search", QSize(30,350),
+                                             QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/search_40x40.png"), model));
+        controlHierarchy.insert("MusicScreen", model);
+        viewer->rootContext()->setContextProperty("controlListModel", model);
+    }
+    else {
+        viewer->rootContext()->setContextProperty("controlListModel", controlHierarchy["MusicScreen"]);
+    }
+}
+
+void AudioPlayer::loadNowPlayingScreen(void)
+{
+    if( !controlHierarchy.contains("NowPlaying")) {
+        QListIterator<TrackData> i( dev->getCurrentPlaylist() );
+
+        ListModel *model = new ListModel(new ControlListItem, this);
+        DEBUGF("There are currently " << dev->getCurrentPlaylist().count() << " items in the playlist");
+
+        while(i.hasNext()) {
+            TrackData track = i.next();
+            QString urlString;
+            if(track.coverid.isEmpty()) {
+                urlString = QString("http://%1:%2/%3")
+                        .arg(SqueezeBoxServerAddress)
+                        .arg(SqueezeBoxServerHttpPort)
+                        .arg(QString("html/images/artists_40x40.png"));
+            }
+            else {
+                urlString = QString("http://%1:%2/music/%3/%4")
+                        .arg(SqueezeBoxServerAddress)
+                        .arg(SqueezeBoxServerHttpPort)
+                        .arg(QString(track.coverid))
+                        .arg(QString("cover_40x40"));
+            }
+            model->appendRow(new ControlListItem(QString(track.title +" - "+track.artist),QSize(30,350),urlString,QString(track.song_id)));
+        }
+        controlHierarchy.insert("NowPlaying", model);
+        viewer->rootContext()->setContextProperty("controlListModel", model);
+    }
+    else {
+        viewer->rootContext()->setContextProperty("controlListModel", controlHierarchy["NowPlaying"]);
+    }
 }
 
 void AudioPlayer::getplayerMACAddress( void )
@@ -182,7 +281,8 @@ void AudioPlayer::getplayerMACAddress( void )
                 t.flags().testFlag( QNetworkInterface::IsUp ) &&
                 t.flags().testFlag( QNetworkInterface::IsRunning ) ) {
             MacAddress = t.hardwareAddress().toLatin1().toLower();
-            //            MacAddress = t.hardwareAddress().toAscii().toLower();
+            if(!MacAddress.contains("%3A")) // not escape encoded
+                encodedMacAddress = QString(MacAddress).toLatin1().toPercentEncoding();
             return;
         }
     }

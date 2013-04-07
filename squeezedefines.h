@@ -48,7 +48,7 @@
 // #define SQUEEZEMAINWINDOW_DEBUG
 #define AUDIOPLAYER_DEBUG
 #define SLIMCLI_DEBUG
-// #define SLIMDEVICE_DEBUG
+#define SLIMDEVICE_DEBUG
 // #define SLIMDATABASE_DEBUG
 // #define SLIMSERVERINFO_DEBUG
 // #define SQUEEZEDISPLAY_DEBUG
@@ -123,6 +123,7 @@ public:
     QByteArray duration;
     QByteArray coverid;
     QByteArray album_id;
+    QByteArray song_id;
 };
 
 class Album

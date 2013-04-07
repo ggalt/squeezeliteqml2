@@ -26,7 +26,7 @@ Rectangle {
     signal volUp()
     signal volDown()
 //    signal controlClicked(int idx)
-    signal controlClicked()
+    signal controlClicked(string s)
 
     Rectangle {
         id: playingRect
@@ -475,7 +475,7 @@ Rectangle {
                     }
                 }
                 border.width: 0
-                z: 1
+                z: 3
                 border.color: "#000000"
                 anchors.right: parent.right
                 anchors.rightMargin: 0
@@ -508,7 +508,7 @@ Rectangle {
                         anchors.fill: parent
                         onPressed: homeImage.source="icons/home_pressed.png"
                         onReleased: homeImage.source="icons/home.png"
-                        onClicked: main.controlClicked(1)
+                        onClicked: main.controlClicked("Home")
                     }
                 }
 
@@ -537,6 +537,34 @@ Rectangle {
                         anchors.fill: parent
                     }
                 }
+
+                Rectangle {
+                    id: nowPlayingBtn
+                    x: 105
+                    width: 200
+                    color: "#00000000"
+                    border.color: "#000000"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 5
+                    anchors.top: parent.top
+                    anchors.topMargin: 5
+
+                    Image {
+                        id: nowPlayingImage
+                        z: 1
+                        anchors.fill: parent
+                        source: "icons/now_playing.png"
+                    }
+
+                    MouseArea {
+                        id: nowPlayingMouseArea
+                        anchors.fill: parent
+                        onPressed: nowPlayingImage.source="icons/now_playing_pressed.png"
+                        onReleased: nowPlayingImage.source="icons/now_playing.png"
+                        onClicked: main.controlClicked("NowPlaying")
+                    }
+                }
             }
 
             ListView {
@@ -549,7 +577,13 @@ Rectangle {
                 anchors.leftMargin: 0
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 0
-
+                currentIndex: 0
+//                Item {
+//                    Connections {
+//                        target: imageViewer
+//                        onImageChanged: console.log("Image has changed!")
+//                    }
+//                }
                 model: controlListModel
                 delegate: ControlListDelegate {
                     Row {
@@ -575,7 +609,7 @@ Rectangle {
                             }
                             color: "white"
                         }
-                    }
+                    }    
                 }
 
 

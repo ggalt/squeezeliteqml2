@@ -2,7 +2,7 @@ import QtQuick 2.0
 
 Item {
     id: listItem
-
+    property bool active: false
 //    property alias mainText: lblImage.mainText
 //    property alias subText: lblImage.subText
 //    property alias image: lblImage.image
@@ -24,6 +24,11 @@ Item {
         visible: mouseArea.pressed
     }
 
+    PlayingHighlight {
+        id: highLight
+        visible: listItem.active==true
+    }
+
 //    LabelImage {
 //        id: lblImage
 //        anchors.left: parent.left
@@ -33,7 +38,7 @@ Item {
         id: mouseArea
         anchors.fill: background
         onClicked: {
-            main.controlClicked()
+            main.controlClicked(name)
             listItem.clicked()
         }
 
