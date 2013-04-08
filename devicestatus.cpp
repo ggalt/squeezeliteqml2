@@ -110,4 +110,6 @@ void DeviceStatus::processDeviceStatusMsg(QByteArray msg)
     }
     DEBUGF("Device Status processing ends");
     emit issueCommand(QByteArray("mode ? \n"));
+    emit playlistIndexChange(QVariant(1));
+    qDebug() << "index message sent";
 }

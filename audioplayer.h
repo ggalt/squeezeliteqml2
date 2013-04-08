@@ -7,6 +7,7 @@
 #include <QString>
 #include <QByteArray>
 #include <QQuickView>
+#include <QModelIndex>
 
 #include "squeezedefines.h"
 #include "slimcli.h"
@@ -75,6 +76,7 @@ private:
     SlimCLI *cli;
     QQuickView *viewer;
     DeviceStatus *dev;
+    QModelIndex *nowPlayingIndex;
 };
 
 #endif // AUDIOPLAYER_H

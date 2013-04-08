@@ -173,6 +173,7 @@ void AudioPlayer::initInterface(void)
     connect(v,SIGNAL(volUp()), this,SLOT(volUp()));
     connect(v,SIGNAL(volDown()), this,SLOT(volDown()));
     connect(v,SIGNAL(controlClicked(QString)), this,SLOT(controlViewClicked(QString)));
+    connect(dev,SIGNAL(playlistIndexChange(QVariant)), v, SLOT(setControlViewListIndex(QVariant)));
 
     viewer->show();
 }
@@ -263,6 +264,7 @@ void AudioPlayer::loadNowPlayingScreen(void)
     else {
         viewer->rootContext()->setContextProperty("controlListModel", controlHierarchy["NowPlaying"]);
     }
+    dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(0))->setHighlight(true);
 }
 
 void AudioPlayer::getplayerMACAddress( void )

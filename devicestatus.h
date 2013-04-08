@@ -5,6 +5,7 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QQuickItem>
+#include <QVariant>
 
 #include "squeezedefines.h"
 
@@ -20,6 +21,7 @@ public:
     
 signals:
     void issueCommand(QByteArray cmd);
+    void playlistIndexChange(QVariant newidx);
     
 public slots:
     void processDeviceStatusMsg(QByteArray msg);

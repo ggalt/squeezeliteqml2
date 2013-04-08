@@ -74,13 +74,14 @@ class StatusObject : public QObject
 public:
     StatusObject(QObject *parent=0) : QObject(parent) { state=false; }
     bool isActive(void) { return state; }
-    Q_INVOKABLE invokeActive(bool newstate) { state=newstate; }
+    Q_INVOKABLE void invokeActive(bool newstate) { state=newstate; }
 
 signals:
     void changeOfStatus(bool b);
 
 public slots:
-    void ActiveSlot(newstate) { state=newstate; }
+    void ActiveSlot(bool newstate) { state=newstate; }
+    void setActive(bool newstate) { state=newstate; }
 private:
     bool state;
 };
@@ -94,8 +95,12 @@ public:
         SizeRole,
         ImageRole,
         CommandRole,
-        SubmenuRole
+        SubmenuRole,
+        HighlightRole
     };
+
+signals:
+    void changeOfStatus(bool b);
 
 public:
     explicit ControlListItem(const QString &name, const QSize &size, QString img, QObject *parent = 0);
@@ -104,22 +109,20 @@ public:
     QVariant data(int role) const;
     QHash<int, QByteArray> roleNames() const;
     void setImage(QString img);
+    void setHighlight(bool status);
     inline QString id() const { return m_name; }
     inline QString name() const { return m_name; }
     inline QSize size() const { return m_size; }
     inline QString image() const { return m_img; }
     inline QString cmd() const { return m_command; }
+    inline bool highlight() const { return m_highlight; }
 
 private:
     QString m_name;
     QSize m_size;
     QString m_img;
     QString m_command;
-
-signals:
-    
-public slots:
-    
+    bool m_highlight;
 };
 
 #endif // CONTROLLISTITEM_H

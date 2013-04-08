@@ -28,7 +28,7 @@ SlimCLI::SlimCLI(QObject *parent, const char *name,
     macAddress = mac;
 
     MaxRequestSize = "100";     // max size of any cli request (used for limiting each request for albums, artists, songs, etc., so we don't time out or overload things)
-    iTimeOut = 10000;           // number of milliseconds before CLI blocking requests time out
+    iTimeOut = 5000;           // number of milliseconds before CLI blocking requests time out
     useAuthentication = false;  // assume we don't need it unless we do
     isAuthenticated = true;     // we will assume that authentication is not used (and therefore we have been authenticated!!)
     maintainConnection = true;
@@ -248,7 +248,7 @@ bool SlimCLI::msgWaiting(void)
     while(slimCliSocket->bytesAvailable() && t.elapsed() < iTimeOut) {  // we need to loop because we often get new messages while processing old and "readyread" misses them -- better to move socket to its own thread, but this works for now
         while(!slimCliSocket->canReadLine ()) { // wait for a full line of content  NOTE: protect against unlikely infinite loop with timer
             if(t.elapsed() > iTimeOut) {
-                // VERBOSE(VB_IMPORTANT, "Error: timed out waiting for a full line from server");
+                DEBUGF("Error: timed out waiting for a full line from server");
                 return false;
             }
         }
@@ -278,11 +278,11 @@ bool SlimCLI::msgWaiting(void)
 
 void SlimCLI::DeviceMsgProcessing(void)
 {
-    DEBUGF("Device Message: " << response);
+    DEBUGF("Device Message: " << response.left(200));
 
     if(macAddress.toLower() == MacAddressOfResponse().toLower()) {
         QByteArray resp = ResponseLessMacAddress();
-        DEBUGF("MSG with MAC removed:" << resp);
+        DEBUGF("MSG with MAC removed:" << resp.left(200));
         if(resp.startsWith("status")) {
             emit DeviceStatusMessage(resp);
         }
@@ -297,7 +297,7 @@ void SlimCLI::DeviceMsgProcessing(void)
 
 void SlimCLI::SystemMsgProcessing(void)
 {
-    DEBUGF("SYSTEM MESSAGE: " << this->response);
+    DEBUGF("SYSTEM MESSAGE: " << response);
 }
 
 void SlimCLI::ProcessLoginMsg(void)

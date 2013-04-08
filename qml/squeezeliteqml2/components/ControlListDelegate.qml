@@ -13,6 +13,9 @@ Item {
 
     signal clicked
     signal pressAndHold
+    function setActive(newstate) {
+        active=newstate
+    }
 
 //    clicked.connect(main.controlClicked)
 
@@ -25,9 +28,10 @@ Item {
     }
 
     PlayingHighlight {
-        id: highLight
-        visible: listItem.active==true
+        id: itemHighLight
+        visible: parent.myHighlight
     }
+
 
 //    LabelImage {
 //        id: lblImage

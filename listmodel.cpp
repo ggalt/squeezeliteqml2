@@ -115,6 +115,12 @@ QHash<int, QByteArray> ListModel::roleNames() const
     return m_prototype->roleNames();
 }
 
+ListItem* ListModel::getRow(int row)
+{
+    ListItem *item=m_list.at(row);
+    return item;
+}
+
 ListItem * ListModel::takeRow(int row)
 {
   beginRemoveRows(QModelIndex(), row, row);

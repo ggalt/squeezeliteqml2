@@ -28,6 +28,13 @@ Rectangle {
 //    signal controlClicked(int idx)
     signal controlClicked(string s)
 
+    function setControlViewListIndex(idx) {
+        controlClicked("index has been set")
+//        controlListView.setCurrentIndexItem(idx)
+//        controlListView.controlListModel[controlListView.currentIndex].setActive(false)
+//        controlListView.controlListModel[idx].setActive(true)
+    }
+
     Rectangle {
         id: playingRect
         color: "#00000000"
@@ -577,7 +584,25 @@ Rectangle {
                 anchors.leftMargin: 0
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 0
-                currentIndex: 0
+                property int oldIndex: 0
+
+                function setHighlight(idx) {
+                    controlListView[oldIndex].setActive(false)
+                    controlListView[idx].setActive(true)
+                    oldIndex=idx
+                }
+
+
+//                onCurrentIndexChanged {
+//                    controlListModel[currentIndex].setActive(true)
+//                }
+
+//                function setCurrentIndexItem( idx ) {
+//                    controlListModel[currentIndex].setActive(false)
+//                    currentIndex=idx
+//                    controlListModel[currentIndex].setActive(true)
+//                }
+
 //                Item {
 //                    Connections {
 //                        target: imageViewer
@@ -586,6 +611,7 @@ Rectangle {
 //                }
                 model: controlListModel
                 delegate: ControlListDelegate {
+                    property bool myHighlight: false
                     Row {
                         id: row1
                         spacing: 10
@@ -600,16 +626,24 @@ Rectangle {
 //                            height: 40
 //                        }
 
+//                        function getHighlight() {
+//                            return highlight
+//                        }
+
                         Text {
                             text: name
                             anchors.verticalCenter: parent.verticalCenter
                             font {
-                                pointSize: 12
+                                pointSize: 10
                                 bold: true
                             }
                             color: "white"
                         }
-                    }    
+                    }
+                    PlayingHighlight {
+                        visible: highlight
+                    }
+//                    PlayingHighlight.visible: highlight
                 }
 
 

@@ -43,6 +43,7 @@ public:
   QHash<int, QByteArray> roleNames() const;
   ListItem* takeRow(int row);
   ListItem* find(const QString &id) const;
+  ListItem* getRow(int row);
   QModelIndex indexFromItem( const ListItem* item) const;
   void clear();
 
