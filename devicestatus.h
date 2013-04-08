@@ -5,18 +5,22 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QQuickItem>
+#include <QQuickView>
+#include <QModelIndex>
 #include <QVariant>
 
 #include "squeezedefines.h"
+#include "listmodel.h"
+#include "controllistitem.h"
 
 
-class DeviceStatus : public QObject
+class DeviceStatus : public QQuickView
 {
     Q_OBJECT
 
 public:
-    explicit DeviceStatus(QObject *parent = 0);
-    void Init(void);
+    explicit DeviceStatus(QWindow *parent = 0);
+    void Init(QString serverAddr, QString httpPort);
     CurrentPlayList &getCurrentPlaylist(void) { return m_devicePlayList; }
     
 signals:
@@ -25,6 +29,20 @@ signals:
     
 public slots:
     void processDeviceStatusMsg(QByteArray msg);
+    void processPlaylistInteractionMsg(QByteArray msg);
+    void controlViewClicked(int idx);
+    void controlViewClicked(QString s);
+
+    void NewSong();
+    void NewPlaylist(void);
+    void Mute(bool);
+    void VolumeChange(int);
+    void ModeChange(QString);
+
+private:
+    void loadHomeScreen(void);
+    void loadMusicScreen(void);
+    void loadNowPlayingScreen(void);
 
 private:
     /*
@@ -49,11 +67,17 @@ private:
     QByteArray m_devicePlaylistName; // name of current playlist
     int m_devicePlaylistCount; // number of tracks in current playlist
     int m_devicePlaylistIndex;  // where are we in the current playlist
+    int m_deviceOldPlaylistIndex;   // storage so we can "unhighlight" the old playlist item
     CurrentPlayList m_devicePlayList; // all info related to the current device playlist
     QTime m_playerTime;   // how long have we been playing?
 
     TrackData m_currentTrack;
     QByteArray m_deviceCurrentSongTime; // time into current song
     QByteArray m_deviceCurrentSongDuration; // length of current song
+
+    QString SqueezeBoxServerAddress;
+    QString SqueezeBoxServerHttpPort;
+    QHash<QString,ListModel*> controlHierarchy;
+    QModelIndex *nowPlayingIndex;
 };
 #endif // DEVICESTATUS_H

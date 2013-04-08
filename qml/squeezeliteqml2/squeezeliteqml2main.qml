@@ -142,17 +142,17 @@ Rectangle {
                 MouseArea {
                     signal playClicked
                     signal playPressed
-                    property int myState: 0
+                    property int myState: 1 // start off paused
                     id: playMouseArea
                     anchors.fill: parent
                     onClicked: playClicked()
                     onPressed: playPressed()
 
                     onPlayPressed: {
-                        if( myState==0 ) {  // currently paused
+                        if( myState==0 ) {  // currently playing, so paused icon displayed
                             playImage.source="icons/pause_pressed.png"
                         }
-                        if( myState==1 ) {  // currently playing
+                        if( myState==1 ) {  // currently paused, so playing icon displayed
                             playImage.source="icons/play_pressed.png"
                         }
                     }
@@ -161,10 +161,10 @@ Rectangle {
                         myState += 1
                         myState %= 2    // stay within the 2 states of "pause and play"
                         main.play(myState)
-                        if( myState==0 ) {
+                        if( myState==0 ) {  // state 0 == play, so show pause Icon so person knows what to push for pause
                             playImage.source="icons/pause.png"
                         }
-                        else if( myState==1 ) {
+                        else if( myState==1 ) { // state 1 == pause, so show pause Icon so person knows what to push for play
                             playImage.source="icons/play.png"
                         }
                     }
@@ -172,7 +172,7 @@ Rectangle {
 
                 Image {
                     id: playImage
-                    source: "icons/pause.png"
+                    source: "icons/play.png"
                     anchors.fill: parent
                 }
                 anchors.rightMargin: 285

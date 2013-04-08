@@ -19,10 +19,10 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
-    QQuickView view;
+//    QQuickView view;
 
     AudioPlayer *p = new AudioPlayer(0);
-    p->Init(&view);
+    p->Init();
     int retVal = app.exec();
     p->Close();
     return retVal;

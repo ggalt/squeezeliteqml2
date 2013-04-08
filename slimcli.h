@@ -82,6 +82,7 @@ signals:
     void FinishedInitializingDevices( void );
 
     void DeviceStatusMessage(QByteArray msg);
+    void PlaylistInteractionMessage(QByteArray msg);
 
 public slots:
     bool SendCommand( QByteArray cmd );

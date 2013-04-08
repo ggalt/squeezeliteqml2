@@ -246,29 +246,34 @@ bool SlimCLI::msgWaiting(void)
     QTime t;
     t.start();
     while(slimCliSocket->bytesAvailable() && t.elapsed() < iTimeOut) {  // we need to loop because we often get new messages while processing old and "readyread" misses them -- better to move socket to its own thread, but this works for now
-        while(!slimCliSocket->canReadLine ()) { // wait for a full line of content  NOTE: protect against unlikely infinite loop with timer
-            if(t.elapsed() > iTimeOut) {
-                DEBUGF("Error: timed out waiting for a full line from server");
-                return false;
-            }
-        }
+//        while(!slimCliSocket->canReadLine ()) { // wait for a full line of content  NOTE: protect against unlikely infinite loop with timer
+//            if(t.elapsed() > iTimeOut) {
+//                DEBUGF("Error: timed out waiting for a full line from server");
+//                return false;
+//            }
+//        }
 
-        if(slimCliSocket->bytesAvailable() > response.size() - 1) {
-            response.resize(slimCliSocket->bytesAvailable() + 1);
-        }
+//        if(slimCliSocket->bytesAvailable() > response.size() - 1) {
+//            response.resize(slimCliSocket->bytesAvailable() + 1);
+//        }
         response = slimCliSocket->readLine();
         RemoveNewLineFromResponse();
 
         QRegExp MACrx("[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]");
 
+        DEBUGF("raw message:" << response.left(20));
+
         if(MACrx.indexIn(QString(response)) >= 0) { // if it starts with a MAC address, send it to a device for processing
             DeviceMsgProcessing();
+            return true;
         }
         else {
             SystemMsgProcessing();
+            return true;
         }
     }
-    return true;
+    DEBUGF("message failed:" << response.left(20));
+    return false;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -287,7 +292,7 @@ void SlimCLI::DeviceMsgProcessing(void)
             emit DeviceStatusMessage(resp);
         }
         else {
-            // device to process playing message
+            emit PlaylistInteractionMessage(resp);
         }
     }
     else {  // wait!  Whose MAC address is this?

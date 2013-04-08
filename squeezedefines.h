@@ -46,9 +46,9 @@
 
 // uncomment the following to turn on debugging for a particular file
 // #define SQUEEZEMAINWINDOW_DEBUG
-#define AUDIOPLAYER_DEBUG
-#define SLIMCLI_DEBUG
-//#define SLIMDEVICE_DEBUG
+//#define AUDIOPLAYER_DEBUG
+//#define SLIMCLI_DEBUG
+#define SLIMDEVICE_DEBUG
 // #define SLIMDATABASE_DEBUG
 // #define SLIMSERVERINFO_DEBUG
 // #define SQUEEZEDISPLAY_DEBUG
@@ -86,6 +86,13 @@ typedef enum { NOLOGIN=101,
                SETUP_NOGENRES,
                SETUP_NOPLAYLISTS
            } cli_error_msg;
+
+enum playerMode
+{
+    PLAY=0,
+    PAUSE,
+    STOP
+};
 
 enum RepeatMode
 { REPEAT_OFF = 0,

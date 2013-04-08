@@ -12,8 +12,6 @@
 #include "squeezedefines.h"
 #include "slimcli.h"
 #include "devicestatus.h"
-#include "listmodel.h"
-#include "controllistitem.h"
 
 class AudioPlayer : public QObject
 {
@@ -22,7 +20,7 @@ public:
     explicit AudioPlayer(QObject *parent = 0);
     ~AudioPlayer();
 
-    void Init(QQuickView *v);
+    void Init(void);
     void Close(void);
     
 signals:
@@ -46,17 +44,10 @@ public slots:
     void playState(int state);
     void volUp(void);
     void volDown(void);
-    void controlViewClicked(int idx);
-    void controlViewClicked(QString s);
-
 
 private:
     void initInterface(void);
     void getplayerMACAddress(void);
-    void loadHomeScreen(void);
-    void loadMusicScreen(void);
-    void loadNowPlayingScreen(void);
-
 
 private:
     QString lmsUsername;
@@ -70,13 +61,10 @@ private:
 
     QByteArray MacAddress;      // MAC address of this machine (which will become the MAC address for our player)
     QByteArray encodedMacAddress;   // percent encoded mac address for use with the CLI
-    QHash<QString,ListModel*> controlHierarchy;
 
     QProcess *player;
     SlimCLI *cli;
-    QQuickView *viewer;
-    DeviceStatus *dev;
-    QModelIndex *nowPlayingIndex;
+    DeviceStatus *devViewer;
 };
 
 #endif // AUDIOPLAYER_H
