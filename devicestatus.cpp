@@ -390,3 +390,30 @@ void DeviceStatus::ModeChange(QString)
     DEBUGF("");
 
 }
+
+QByteArray DeviceStatus::MacAddressOfResponse(QByteArray response)
+{
+    DEBUGF("");
+    if(response.contains("%3A"))
+        return response.left(27).trimmed().toLower();
+    else
+        return QByteArray();
+}
+
+QByteArray DeviceStatus::ResponseLessMacAddress(QByteArray response)
+{
+    DEBUGF("");
+    if(response.contains("%3A"))
+        return response.right(response.length() - 27).trimmed();
+    else
+        return response.trimmed();
+}
+
+QByteArray DeviceStatus::RemoveNewLineFromResponse(QByteArray response)
+{
+    DEBUGF("");
+    while(response.contains('\n'))
+        response.replace(response.indexOf('\n'), 1, " ");
+    return response.trimmed();
+}
+

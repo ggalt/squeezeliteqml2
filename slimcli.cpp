@@ -1,5 +1,3 @@
-#include "slimcli.h"
-
 #include <QtAlgorithms>
 #include "slimcli.h"
 

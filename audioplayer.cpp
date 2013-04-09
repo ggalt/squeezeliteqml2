@@ -83,7 +83,7 @@ void AudioPlayer::Init(void)
 
 
     //    // initialize the CLI interface.  Make sure that you've set the appropriate server address and port
-    cli = new SlimCLI(this, "cli", SqueezeBoxServerAddress, encodedMacAddress, SqueezeBoxServerCLIPort.toInt());
+    cli = new threadedslimCli(this, "cli", SqueezeBoxServerAddress, encodedMacAddress, SqueezeBoxServerCLIPort.toInt());
     connect(cli,SIGNAL(isConnected()),this,SLOT(cliConnected()));
 
     cli->Init();
@@ -92,15 +92,23 @@ void AudioPlayer::Init(void)
 void AudioPlayer::cliConnected(void)
 {
     DEBUGF("cliConnected Slot");
-    connect(devViewer,SIGNAL(issueCommand(QByteArray)),
-            cli,SLOT(SendCommand(QByteArray)));    // so device can send messages
-    connect(cli,SIGNAL(DeviceStatusMessage(QByteArray)),
-            devViewer,SLOT(processDeviceStatusMsg(QByteArray)));  // so cli can send message to device
-    connect(cli,SIGNAL(PlaylistInteractionMessage(QByteArray)),
-            devViewer,SLOT(processPlaylistInteractionMsg(QByteArray)));
+//    connect(devViewer,SIGNAL(issueCommand(QByteArray)),
+//            cli,SLOT(SendCommand(QByteArray)));    // so device can send messages
+//    connect(cli,SIGNAL(DeviceStatusMessage(QByteArray)),
+//            devViewer,SLOT(processDeviceStatusMsg(QByteArray)));  // so cli can send message to device
+//    connect(cli,SIGNAL(PlaylistInteractionMessage(QByteArray)),
+//            devViewer,SLOT(processPlaylistInteractionMsg(QByteArray)));
     playState(PAUSE);
     devViewer->Init(SqueezeBoxServerAddress, SqueezeBoxServerHttpPort);
     initInterface();
+}
+
+void AudioPlayer::cliMsgAvailable(void)
+{
+    QByteArray msg;
+    while((msg=cli->getResponse()) != QByteArray()) {
+
+    }
 }
 
 void AudioPlayer::initInterface(void)

@@ -10,7 +10,7 @@
 #include <QModelIndex>
 
 #include "squeezedefines.h"
-#include "slimcli.h"
+#include "threadedslimcli.h"
 #include "devicestatus.h"
 
 class AudioPlayer : public QObject
@@ -37,6 +37,7 @@ public slots:
 
      */
     void cliConnected(void);
+    void cliMsgAvailable(void);
 
     void shuffleState(int state);
     void nextTrackClicked(void);
@@ -63,7 +64,7 @@ private:
     QByteArray encodedMacAddress;   // percent encoded mac address for use with the CLI
 
     QProcess *player;
-    SlimCLI *cli;
+    threadedslimCli *cli;
     DeviceStatus *devViewer;
 };
 

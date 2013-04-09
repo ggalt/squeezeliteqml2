@@ -28,6 +28,13 @@ signals:
     void playlistIndexChange(QVariant newidx);
     
 public slots:
+    QByteArray MacAddressOfResponse( QByteArray response );
+    QByteArray ResponseLessMacAddress( QByteArray response );
+    QByteArray RemoveNewLineFromResponse( QByteArray response );
+
+    //    void ProcessLoginMsg( void );
+    //    void ProcessControlMsg( void );
+    //    void processStatusMsg( void );
     void processDeviceStatusMsg(QByteArray msg);
     void processPlaylistInteractionMsg(QByteArray msg);
     void controlViewClicked(int idx);
@@ -52,10 +59,10 @@ private:
 * so that server communication doesn't require a bunch of conversions back
 * and forth -- except in rare instances.
 */
-//    QByteArray m_deviceNumber; // device number in "Device count" (i.e., if there are 3 devices, which number (0,1,2) is this?)
-//    QByteArray m_deviceMAC; // MAC address of the device
-//    QByteArray m_deviceName; // Name as listed in server (e.g., "SoftSqueeze" or "Kitchen Device")
-//    QByteArray m_deviceIP; // IP address of device
+    //    QByteArray m_deviceNumber; // device number in "Device count" (i.e., if there are 3 devices, which number (0,1,2) is this?)
+    //    QByteArray m_deviceMAC; // MAC address of the device
+    //    QByteArray m_deviceName; // Name as listed in server (e.g., "SoftSqueeze" or "Kitchen Device")
+    //    QByteArray m_deviceIP; // IP address of device
 
     QByteArray m_deviceVol; // volume (0-100)
     bool m_deviceMute; // is device muted
