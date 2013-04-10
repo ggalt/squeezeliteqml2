@@ -1,4 +1,9 @@
+#include <QEventLoop>
+#include <Qtimer>
+
 #include "threadedslimcli.h"
+#include "squeezedefines.h"
+
 #ifdef SLIMCLI_DEBUG
 #define DEBUGF(...) qDebug() << this->objectName() << Q_FUNC_INFO << __VA_ARGS__;
 #else
@@ -9,6 +14,7 @@
 threadedslimCli::threadedslimCli(QObject *parent, const char *name, QString serverAdd, QByteArray mac, quint16 cliport) :
     QThread(parent)
 {
+    DEBUGF("threaded cli created");
     setObjectName("threadedSlimCLI");
     SlimServerAddr = serverAdd;
     cliPort = cliport;          // default, but user can reset
@@ -23,7 +29,7 @@ threadedslimCli::threadedslimCli(QObject *parent, const char *name, QString serv
 threadedslimCli::~threadedslimCli()
 {
     disconnect(slimCliSocket, SIGNAL(disconnected()),      this, SLOT(LostConnection()));
-    SendCommand ("exit");  // shut down CLI interface
+    SendCommand("exit");  // shut down CLI interface
     slimCliSocket->flush();
     delete slimCliSocket;
 }
@@ -36,6 +42,8 @@ void threadedslimCli::SendCommand( QByteArray cmd )
 
 void threadedslimCli::SendCommand( QByteArray cmd, QByteArray mac )
 {
+    DEBUGF("Sending command" << cmd << "to" << mac);
+    cmd = mac +" "+cmd;
     if(!cmd.trimmed().endsWith("\n")) // need to terminate with a \n
         cmd = cmd.trimmed() + "\n";
     QMutexLocker m(&mutex);
@@ -44,6 +52,7 @@ void threadedslimCli::SendCommand( QByteArray cmd, QByteArray mac )
 
 QByteArray threadedslimCli::getResponse(void)   // returns first response in list
 {
+    DEBUGF("returning response");
     QMutexLocker m(&mutex);
     if(!responseList.isEmpty()) {
         QByteArray resp = responseList.first();
@@ -66,6 +75,7 @@ QByteArray threadedslimCli::getResponse(void)   // returns first response in lis
 
 bool threadedslimCli::Connect(void)
 {
+    DEBUGF("CONNECTING TO CLI");
     QEventLoop q;
     QTimer tT;
 
@@ -75,6 +85,7 @@ bool threadedslimCli::Connect(void)
             &q, SLOT(quit()),Qt::DirectConnection);
 
     slimCliSocket->connectToHost(SlimServerAddr, cliPort);
+    DEBUGF("connecting to" << SlimServerAddr << "on port" << cliPort);
 
     tT.start(5000); // 5s timeout
     q.exec();
@@ -83,9 +94,11 @@ bool threadedslimCli::Connect(void)
         // download complete
         tT.stop();
     } else {
-        VERBOSE( VB_IMPORTANT, LOC + "Audio Header Request Timed Out");
-        return QString(""); // returning empty string will indicate no header retrieved
+        DEBUGF("Audio Header Request Timed Out");
+        return false; // returning empty string will indicate no header retrieved
     }
+    emit isConnected();
+    return true;
 }
 
 void threadedslimCli::stop(void)
@@ -96,8 +109,8 @@ void threadedslimCli::stop(void)
 
 void threadedslimCli::run(void)
 {
-    DEBUGF("");
-    slimCliSocket = new QTcpSocket(this);
+    DEBUGF("starting run");
+    slimCliSocket = new QTcpSocket(0);
 
     if(!cliUsername.isEmpty() && !cliPassword.isEmpty()) { // we need to authenticate
         useAuthentication = true;
@@ -105,22 +118,31 @@ void threadedslimCli::run(void)
     }
 
     emit cliInfo(QString("Connecting to Squeezebox Server"));
+    if(!Connect())
+        return;
 
+    slimCliSocket->flush();
     // main loop looking for messages
     isRunning = true;
     while(isRunning) {
-        {   // see if there is a message to send
-            QMutexLocker m(&mutex);
-            if(!command.isEmpty()){
-                slimCliSocket->write(command);
-                command.clear();
-            }
+        // see if there is a message to send
+        mutex.lock();
+        if(!command.isEmpty()){
+            DEBUGF("SENDING MESSAGE FROM CLI:" << command);
+            slimCliSocket->write(command);
+            slimCliSocket->flush();
+            command.clear();
         }
+        mutex.unlock();
+
 
         // see if there is anything to read
-        if(slimCliSocket->canReadLine()) {
-            QMutexLocker m(&mutex);
+//        slimCliSocket->waitForReadyRead(5000);
+        while(slimCliSocket->canReadLine()) {
+            mutex.lock();
             responseList.append(slimCliSocket->readLine());
+            mutex.unlock();
+            DEBUGF("Message from CLI available:" << responseList.last().left(100));
             emit messageReady();
         }
     }

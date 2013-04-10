@@ -32,6 +32,7 @@ void AudioPlayer::Close(void)
         player->waitForFinished(5000);
         player->deleteLater();
     }
+    cli->stop();
 }
 
 void AudioPlayer::Init(void)
@@ -83,21 +84,28 @@ void AudioPlayer::Init(void)
 
 
     //    // initialize the CLI interface.  Make sure that you've set the appropriate server address and port
+    DEBUGF("creating thread");
+
     cli = new threadedslimCli(this, "cli", SqueezeBoxServerAddress, encodedMacAddress, SqueezeBoxServerCLIPort.toInt());
     connect(cli,SIGNAL(isConnected()),this,SLOT(cliConnected()));
+//    connect(this,SIGNAL(startCLI()),cli,SLOT(start()),Qt::DirectConnection);
 
-    cli->Init();
+    DEBUGF("starting thread");
+
+//    emit startCLI();
+    cli->start();
 }
 
 void AudioPlayer::cliConnected(void)
 {
     DEBUGF("cliConnected Slot");
-//    connect(devViewer,SIGNAL(issueCommand(QByteArray)),
-//            cli,SLOT(SendCommand(QByteArray)));    // so device can send messages
-//    connect(cli,SIGNAL(DeviceStatusMessage(QByteArray)),
-//            devViewer,SLOT(processDeviceStatusMsg(QByteArray)));  // so cli can send message to device
-//    connect(cli,SIGNAL(PlaylistInteractionMessage(QByteArray)),
-//            devViewer,SLOT(processPlaylistInteractionMsg(QByteArray)));
+    connect(devViewer,SIGNAL(issueCommand(QByteArray)),
+            this,SLOT(sendCLIcommand(QByteArray)));    // so device can send messages
+    connect(this,SIGNAL(DeviceStatusMessage(QByteArray)),
+            devViewer,SLOT(processDeviceStatusMsg(QByteArray)));  // so cli can send message to device
+    connect(this,SIGNAL(PlaylistInteractionMessage(QByteArray)),
+            devViewer,SLOT(processPlaylistInteractionMsg(QByteArray)));
+    connect(cli,SIGNAL(messageReady()),this,SLOT(cliMsgAvailable()));
     playState(PAUSE);
     devViewer->Init(SqueezeBoxServerAddress, SqueezeBoxServerHttpPort);
     initInterface();
@@ -107,9 +115,107 @@ void AudioPlayer::cliMsgAvailable(void)
 {
     QByteArray msg;
     while((msg=cli->getResponse()) != QByteArray()) {
-
+        DEBUGF("cli msg avail:" << msg);
+        ProcessCLIMessage(msg);
     }
 }
+
+void AudioPlayer::sendCLIcommand(QByteArray cmd)
+{
+    cli->SendCommand(cmd);
+}
+
+void AudioPlayer::ProcessCLIMessage(QByteArray &msg)
+{
+    while(msg.contains('\n'))
+        msg.replace(msg.indexOf('\n'), 1, " ");
+
+    QRegExp MACrx("[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]");
+
+    DEBUGF("raw message:" << msg.left(20));
+
+    if(MACrx.indexIn(QString(msg)) >= 0) { // if it starts with a MAC address, send it to a device for processing
+        DeviceMsgProcessing(msg);
+    }
+    else {
+        SystemMsgProcessing(msg);
+    }
+}
+
+void AudioPlayer::DeviceMsgProcessing(QByteArray &msg)
+{
+    DEBUGF("Device Message: " << msg.left(200));
+
+    if(encodedMacAddress.toLower() == MacAddressOfResponse(msg).toLower()) {
+        QByteArray resp = ResponseLessMacAddress(msg);
+        DEBUGF("MSG with MAC removed:" << resp.left(200));
+        if(resp.startsWith("status")) {
+            emit DeviceStatusMessage(resp);
+        }
+        else {
+            emit PlaylistInteractionMessage(resp);
+        }
+    }
+    else {  // wait!  Whose MAC address is this?
+//        DEBUGF(QString("Unknown MAC address: %1 our address is %2").arg(QString(MacAddressOfResponse())).arg(QString(macAddress)));
+    }
+}
+
+void AudioPlayer::SystemMsgProcessing(QByteArray &msg)
+{
+    DEBUGF("SYSTEM MESSAGE: " << msg);
+}
+
+void AudioPlayer::ProcessLoginMsg(QByteArray &msg)
+{
+    DEBUGF("");
+//    if(msg.left(5) == "login")
+//        isAuthenticated = true;
+}
+
+void AudioPlayer::ProcessControlMsg(QByteArray &msg)
+{
+    DEBUGF("CONTROLLING MODE message received: " << msg);
+    QList<QByteArray> responseList;
+    responseList = msg.split(' ');   // break this up into fields delimited by spaces
+    if(msg.left(7) == "artists") {  // it's processing artist information
+        if(responseList.at(3).left(9) == "artist_id") {
+            for(int c = 3; c < responseList.size(); c++) {
+            }
+        }
+        return;
+    }
+
+    if(msg.left(6) == "albums" )  // its processing album information
+        return;
+}
+
+QByteArray AudioPlayer::MacAddressOfResponse(QByteArray &msg)
+{
+    DEBUGF("");
+    if(msg.contains("%3A"))
+        return msg.left(27).trimmed().toLower();
+    else
+        return QByteArray();
+}
+
+QByteArray AudioPlayer::ResponseLessMacAddress(QByteArray &msg)
+{
+    DEBUGF("");
+    if(msg.contains("%3A"))
+        return msg.right(msg.length() - 27).trimmed();
+    else
+        return msg.trimmed();
+}
+
+QByteArray AudioPlayer::RemoveNewLineFromResponse(QByteArray &msg)
+{
+    DEBUGF("");
+    while(msg.contains('\n'))
+        msg.replace(msg.indexOf('\n'), 1, " ");
+    return msg;
+}
+
 
 void AudioPlayer::initInterface(void)
 {

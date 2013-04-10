@@ -24,7 +24,10 @@ public:
     void Close(void);
     
 signals:
-    
+    void startCLI(void);
+    void DeviceStatusMessage(QByteArray msg);
+    void PlaylistInteractionMessage(QByteArray msg);
+
 public slots:
     /*
      *  signal shuffle(int state)
@@ -38,6 +41,7 @@ public slots:
      */
     void cliConnected(void);
     void cliMsgAvailable(void);
+    void sendCLIcommand(QByteArray cmd);
 
     void shuffleState(int state);
     void nextTrackClicked(void);
@@ -49,6 +53,17 @@ public slots:
 private:
     void initInterface(void);
     void getplayerMACAddress(void);
+
+    void ProcessCLIMessage(QByteArray &msg);
+    void DeviceMsgProcessing(QByteArray &msg); // messages forwarded to devices
+    void SystemMsgProcessing(QByteArray &msg); // messages forwarded to the system for processing
+
+    void ProcessLoginMsg(QByteArray &msg);
+    void ProcessControlMsg(QByteArray &msg);
+
+    QByteArray MacAddressOfResponse( QByteArray &msg );
+    QByteArray ResponseLessMacAddress( QByteArray &msg );
+    QByteArray RemoveNewLineFromResponse( QByteArray &msg );
 
 private:
     QString lmsUsername;

@@ -28,13 +28,6 @@ signals:
     void playlistIndexChange(QVariant newidx);
     
 public slots:
-    QByteArray MacAddressOfResponse( QByteArray response );
-    QByteArray ResponseLessMacAddress( QByteArray response );
-    QByteArray RemoveNewLineFromResponse( QByteArray response );
-
-    //    void ProcessLoginMsg( void );
-    //    void ProcessControlMsg( void );
-    //    void processStatusMsg( void );
     void processDeviceStatusMsg(QByteArray msg);
     void processPlaylistInteractionMsg(QByteArray msg);
     void controlViewClicked(int idx);

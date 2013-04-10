@@ -44,7 +44,7 @@ void DeviceStatus::Init(QString serverAddr, QString httpPort)
 
     loadHomeScreen();
 
-    this->show();
+    show();
 
 
     // this command gets genre, artist, album, title, year, duration, artwork_id (to get cover image)
@@ -334,7 +334,7 @@ void DeviceStatus::loadNowPlayingScreen(void)
 
 void DeviceStatus::controlViewClicked(int idx)
 {
-    DEBUGF('control view clicked with name:' << idx);
+    DEBUGF("control view clicked with name:" << idx);
 }
 
 void DeviceStatus::controlViewClicked(QString itemClicked)
@@ -391,29 +391,29 @@ void DeviceStatus::ModeChange(QString)
 
 }
 
-QByteArray DeviceStatus::MacAddressOfResponse(QByteArray response)
-{
-    DEBUGF("");
-    if(response.contains("%3A"))
-        return response.left(27).trimmed().toLower();
-    else
-        return QByteArray();
-}
+//QByteArray DeviceStatus::MacAddressOfResponse(QByteArray response)
+//{
+//    DEBUGF("");
+//    if(response.contains("%3A"))
+//        return response.left(27).trimmed().toLower();
+//    else
+//        return QByteArray();
+//}
 
-QByteArray DeviceStatus::ResponseLessMacAddress(QByteArray response)
-{
-    DEBUGF("");
-    if(response.contains("%3A"))
-        return response.right(response.length() - 27).trimmed();
-    else
-        return response.trimmed();
-}
+//QByteArray DeviceStatus::ResponseLessMacAddress(QByteArray response)
+//{
+//    DEBUGF("");
+//    if(response.contains("%3A"))
+//        return response.right(response.length() - 27).trimmed();
+//    else
+//        return response.trimmed();
+//}
 
-QByteArray DeviceStatus::RemoveNewLineFromResponse(QByteArray response)
-{
-    DEBUGF("");
-    while(response.contains('\n'))
-        response.replace(response.indexOf('\n'), 1, " ");
-    return response.trimmed();
-}
+//QByteArray DeviceStatus::RemoveNewLineFromResponse(QByteArray response)
+//{
+//    DEBUGF("");
+//    while(response.contains('\n'))
+//        response.replace(response.indexOf('\n'), 1, " ");
+//    return response.trimmed();
+//}
 
