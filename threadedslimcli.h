@@ -16,6 +16,7 @@ public:
                              quint16 cliport = 9090);
     ~threadedslimCli();
 
+    bool Connect(void);
     void SendCommand( QByteArray cmd );
     void SendCommand( QByteArray cmd, QByteArray mac );
     QByteArray getResponse(void);   // returns first response in list
@@ -31,7 +32,6 @@ protected:
     void run(void);
 
 private:
-    bool Connect(void);
 //    void DeviceMsgProcessing( void ); // messages forwarded to devices
 //    void SystemMsgProcessing( void ); // messages forwarded to the system for processing
 

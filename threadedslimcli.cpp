@@ -76,6 +76,16 @@ QByteArray threadedslimCli::getResponse(void)   // returns first response in lis
 bool threadedslimCli::Connect(void)
 {
     DEBUGF("CONNECTING TO CLI");
+    DEBUGF("starting run");
+    slimCliSocket = new QTcpSocket(0);
+
+    if(!cliUsername.isEmpty() && !cliPassword.isEmpty()) { // we need to authenticate
+        useAuthentication = true;
+        isAuthenticated = false;  // will be reset later if we succeed
+    }
+
+    emit cliInfo(QString("Connecting to Squeezebox Server"));
+
     QEventLoop q;
     QTimer tT;
 
@@ -109,19 +119,6 @@ void threadedslimCli::stop(void)
 
 void threadedslimCli::run(void)
 {
-    DEBUGF("starting run");
-    slimCliSocket = new QTcpSocket(0);
-
-    if(!cliUsername.isEmpty() && !cliPassword.isEmpty()) { // we need to authenticate
-        useAuthentication = true;
-        isAuthenticated = false;  // will be reset later if we succeed
-    }
-
-    emit cliInfo(QString("Connecting to Squeezebox Server"));
-    if(!Connect())
-        return;
-
-    slimCliSocket->flush();
     // main loop looking for messages
     isRunning = true;
     while(isRunning) {

@@ -88,12 +88,8 @@ void AudioPlayer::Init(void)
 
     cli = new threadedslimCli(this, "cli", SqueezeBoxServerAddress, encodedMacAddress, SqueezeBoxServerCLIPort.toInt());
     connect(cli,SIGNAL(isConnected()),this,SLOT(cliConnected()));
-//    connect(this,SIGNAL(startCLI()),cli,SLOT(start()),Qt::DirectConnection);
 
-    DEBUGF("starting thread");
-
-//    emit startCLI();
-    cli->start();
+    cli->Connect();
 }
 
 void AudioPlayer::cliConnected(void)
@@ -106,6 +102,7 @@ void AudioPlayer::cliConnected(void)
     connect(this,SIGNAL(PlaylistInteractionMessage(QByteArray)),
             devViewer,SLOT(processPlaylistInteractionMsg(QByteArray)));
     connect(cli,SIGNAL(messageReady()),this,SLOT(cliMsgAvailable()));
+    cli->start();
     playState(PAUSE);
     devViewer->Init(SqueezeBoxServerAddress, SqueezeBoxServerHttpPort);
     initInterface();
