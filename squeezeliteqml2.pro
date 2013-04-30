@@ -16,20 +16,16 @@ SOURCES += main.cpp \
     slimcli.cpp \
     audioplayer.cpp \
     devicestatus.cpp \
-    listmodel.cpp \
-    controllistitem.cpp \
     playerinterface.cpp \
-    threadedslimcli.cpp
+    controllistmodel.cpp
 
 HEADERS += \
     squeezedefines.h \
     slimcli.h \
     audioplayer.h \
     devicestatus.h \
-    listmodel.h \
-    controllistitem.h \
     playerinterface.h \
-    threadedslimcli.h
+    controllistmodel.h
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)

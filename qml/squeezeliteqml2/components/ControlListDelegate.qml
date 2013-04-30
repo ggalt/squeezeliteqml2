@@ -27,10 +27,11 @@ Item {
         visible: mouseArea.pressed
     }
 
-    PlayingHighlight {
-        id: itemHighLight
-        visible: parent.myHighlight
-    }
+//    PlayingHighlight {
+//        id: itemHighLight
+////        visible: parent.myHighlight
+//        visible: false
+//    }
 
 
 //    LabelImage {

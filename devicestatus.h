@@ -10,8 +10,7 @@
 #include <QVariant>
 
 #include "squeezedefines.h"
-#include "listmodel.h"
-#include "controllistitem.h"
+#include "controllistmodel.h"
 
 
 class DeviceStatus : public QQuickView
@@ -26,6 +25,7 @@ public:
 signals:
     void issueCommand(QByteArray cmd);
     void playlistIndexChange(QVariant newidx);
+    void deviceStatusReady(void);
     
 public slots:
     void processDeviceStatusMsg(QByteArray msg);
@@ -70,6 +70,7 @@ private:
     int m_deviceOldPlaylistIndex;   // storage so we can "unhighlight" the old playlist item
     CurrentPlayList m_devicePlayList; // all info related to the current device playlist
     QTime m_playerTime;   // how long have we been playing?
+    bool m_deviceInitialized;
 
     TrackData m_currentTrack;
     QByteArray m_deviceCurrentSongTime; // time into current song
@@ -77,7 +78,7 @@ private:
 
     QString SqueezeBoxServerAddress;
     QString SqueezeBoxServerHttpPort;
-    QHash<QString,ListModel*> controlHierarchy;
+    QHash<QString,ControlListModel*> controlHierarchy;
     QModelIndex *nowPlayingIndex;
 };
 #endif // DEVICESTATUS_H

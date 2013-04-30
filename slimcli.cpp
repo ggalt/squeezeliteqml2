@@ -46,11 +46,6 @@ void SlimCLI::Init(void)
 {
     DEBUGF("");
     slimCliSocket = new QTcpSocket(this);
-    bool ok;
-    qint64 buffsize = MaxRequestSize.toInt(&ok) * 5000;  // initialize the read buffer to read up to MaxRequestSize * 5000 bytes
-    if(!ok)
-        buffsize = 500000;
-    slimCliSocket->setReadBufferSize(buffsize);
 
     if(!cliUsername.isEmpty() && !cliPassword.isEmpty()) { // we need to authenticate
         useAuthentication = true;
@@ -88,9 +83,13 @@ bool SlimCLI::SetupLogin(void){
 // ------------------------------------------------------------------------------------------------
 
 void SlimCLI::Connect(void){
+    if(!slimCliSocket->isValid()) {
+        DEBUGF("invalid socket");
+    }
     QString myMsg = QString("Connecting to %1 on port %2").arg(SlimServerAddr).arg(cliPort);
     DEBUGF(myMsg);
     slimCliSocket->connectToHost(SlimServerAddr, cliPort);
+    DEBUGF("CONNECTION MESSAGE SENT");
 }
 
 bool SlimCLI::CLIConnectionOpen(void){
@@ -108,8 +107,10 @@ bool SlimCLI::CLIConnectionOpen(void){
 
     isAuthenticated = true;   // we've made it to here, so we are authenticated (either through u/p combo, or because there is no u/p
 
-    connect(slimCliSocket, SIGNAL(readyRead()),         this, SLOT(msgWaiting()));
-    connect(slimCliSocket, SIGNAL(disconnected()),      this, SLOT(LostConnection()));
+    connect(slimCliSocket, SIGNAL(readyRead()),
+            this, SLOT(msgWaiting()));
+    connect(slimCliSocket, SIGNAL(disconnected()),
+            this, SLOT(LostConnection()));
 
     // alert everyone we're connected
     DEBUGF("Device Init");
@@ -131,15 +132,14 @@ void SlimCLI::LostConnection(void){
 }
 
 void SlimCLI::ConnectionError(int err){
-    DEBUGF("");
+    DEBUGF(QString("Connection error: %1").arg(err));
     emit cliError(CONNECTION_ERROR);
-    QString myMsg = QString("Connection error: %1").arg(err);
+
 }
 
 void SlimCLI::ConnectionError(QAbstractSocket::SocketError err){
-    DEBUGF("");
+    DEBUGF(QString("Connection error: %1").arg(slimCliSocket->errorString()));
     emit cliError(CONNECTION_ERROR);
-    QString myMsg = QString("Connection error: %1").arg(slimCliSocket->errorString());
 }
 
 void SlimCLI::SentBytes(int b){
@@ -166,6 +166,7 @@ bool SlimCLI::SendCommand(QByteArray cmd, QByteArray mac)
         command = command.trimmed() + "\n";
 
     if(slimCliSocket->write(command) > 0) {
+        slimCliSocket->flush();
         return true;
     }
     else
@@ -243,35 +244,22 @@ bool SlimCLI::msgWaiting(void)
     DEBUGF("");
     QTime t;
     t.start();
-    while(slimCliSocket->bytesAvailable() && t.elapsed() < iTimeOut) {  // we need to loop because we often get new messages while processing old and "readyread" misses them -- better to move socket to its own thread, but this works for now
-//        while(!slimCliSocket->canReadLine ()) { // wait for a full line of content  NOTE: protect against unlikely infinite loop with timer
-//            if(t.elapsed() > iTimeOut) {
-//                DEBUGF("Error: timed out waiting for a full line from server");
-//                return false;
-//            }
-//        }
-
-//        if(slimCliSocket->bytesAvailable() > response.size() - 1) {
-//            response.resize(slimCliSocket->bytesAvailable() + 1);
-//        }
-        response = slimCliSocket->readLine();
-        RemoveNewLineFromResponse();
-
-        QRegExp MACrx("[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]");
-
-        DEBUGF("raw message:" << response.left(20));
-
-        if(MACrx.indexIn(QString(response)) >= 0) { // if it starts with a MAC address, send it to a device for processing
-            DeviceMsgProcessing();
-            return true;
-        }
-        else {
-            SystemMsgProcessing();
-            return true;
+    bool readSomething = false;
+    while(slimCliSocket->bytesAvailable() && t.elapsed() < iTimeOut) {
+        if(slimCliSocket->canReadLine()) {
+            response = slimCliSocket->readLine();
+            readSomething=true;
+            RemoveNewLineFromResponse();
+            QRegExp MACrx("[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]%3A[0-9a-fA-F][0-9a-fA-F]");
+            if(MACrx.indexIn(QString(response)) >= 0) { // if it starts with a MAC address, send it to a device for processing
+                DeviceMsgProcessing();
+            }
+            else {
+                SystemMsgProcessing();
+            }
         }
     }
-    DEBUGF("message failed:" << response.left(20));
-    return false;
+    return readSomething;
 }
 
 // ------------------------------------------------------------------------------------------------

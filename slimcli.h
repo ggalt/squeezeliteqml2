@@ -28,8 +28,6 @@
 
 class SlimCLI : public QObject {
     Q_OBJECT
-//    Q_PROPERTY(QByteArray mac READ getMacAddress WRITE setMacAddress)
-//    Q_PROPERTY(QString serverAddr READ getSqueezeServerAddress WRITE setSqueezeServerAddress)
 
 public:
     SlimCLI( QObject *parent=0, const char *name = NULL,

@@ -28,6 +28,7 @@ DeviceStatus::DeviceStatus(QWindow *parent) :
     //    TrackData m_currentTrack;
     //    QByteArray m_deviceCurrentSongTime; // time into current song
     //    QByteArray m_deviceCurrentSongDuration; // length of current song
+    m_deviceInitialized = false;
 }
 
 void DeviceStatus::Init(QString serverAddr, QString httpPort)
@@ -43,9 +44,7 @@ void DeviceStatus::Init(QString serverAddr, QString httpPort)
     SqueezeBoxServerHttpPort = httpPort;
 
     loadHomeScreen();
-
     show();
-
 
     // this command gets genre, artist, album, title, year, duration, artwork_id (to get cover image)
     issueCommand(QByteArray("status 0 1000 tags:g,a,l,t,e,y,d,c \n"));
@@ -130,6 +129,11 @@ void DeviceStatus::processDeviceStatusMsg(QByteArray msg)
     }
     DEBUGF("Device Status processing ends");
     emit issueCommand(QByteArray("mode ? \n"));
+    if(!m_deviceInitialized) {
+        m_deviceInitialized = true;
+        emit deviceStatusReady();
+    }
+    loadNowPlayingScreen();
     emit playlistIndexChange(QVariant(1));
     qDebug() << "index message sent";
 }
@@ -181,17 +185,17 @@ void DeviceStatus::processPlaylistInteractionMsg(QByteArray msg)
     else if(msg.left(19) == "playlist loadtracks") { // it's a subscribed message regarding a new playlist, so process it
         //    SendDeviceCommand(QString("status 0 1000 tags:g,a,l,t,y,d,J \n"));
         emit issueCommand(QByteArray("status 0 1000 tags:g,a,l,t,e,y,d,c \n"));
-        emit NewPlaylist();
+        NewPlaylist();
     }
     else if(msg.left(18) == "playlist addtracks") { // it's a subscribed message regarding an updated playlist, so process it
         //    SendDeviceCommand(QString("status 0 1000 tags:g,a,l,t,y,d,J \n"));
         emit issueCommand(QByteArray("status 0 1000 tags:g,a,l,t,e,y,d,c \n"));
-        emit NewPlaylist();
+        NewPlaylist();
     }
     else if(msg.left(15) == "playlist delete") { // it's a subscribed message regarding an updated playlist, so process it
         //        SendDeviceCommand(QString("status 0 1000 tags:g,a,l,t,y,d,J \n"));
         emit issueCommand(QByteArray("status 0 1000 tags:g,a,l,t,e,y,d,c \n"));
-        emit NewPlaylist();
+        NewPlaylist();
     }
     else if(msg.left(12) == "mixer muting") {
         if(msg.endsWith("1")) // mute
@@ -245,16 +249,16 @@ void DeviceStatus::processPlaylistInteractionMsg(QByteArray msg)
 void DeviceStatus::loadHomeScreen(void)
 {
     if( !controlHierarchy.contains("Home")) {
-        ListModel *model = new ListModel(new ControlListItem, this);
-        model->appendRow(new ControlListItem("Music", QSize(30,350),
+        ControlListModel *model = new ControlListModel(this);
+        model->appendRow(new ControlListItem("Music",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/artists_40x40.png"), model));
-        model->appendRow(new ControlListItem("Internet Radio", QSize(30,350),
+        model->appendRow(new ControlListItem("Internet Radio",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/plugins/cache/icons/radiomusic_40x40.png"), model));
-        model->appendRow(new ControlListItem("My Apps", QSize(30,350),
+        model->appendRow(new ControlListItem("My Apps",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/plugins/AppGallery/html/images/icon_40x40.png"), model));
-        model->appendRow(new ControlListItem("Favorites", QSize(30,350),
+        model->appendRow(new ControlListItem("Favorites",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/favorites_40x40.png"), model));
-        model->appendRow(new ControlListItem("Extras", QSize(30,350),
+        model->appendRow(new ControlListItem("Extras",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/alarm_40x40.png"), model));
         controlHierarchy.insert("Home", model);
         rootContext()->setContextProperty("controlListModel", model);
@@ -269,24 +273,24 @@ void DeviceStatus::loadHomeScreen(void)
 void DeviceStatus::loadMusicScreen(void)
 {
     if( !controlHierarchy.contains("MusicScreen")) {
-        ListModel *model = new ListModel(new ControlListItem, this);
-        model->appendRow(new ControlListItem("Artists", QSize(30,350),
+        ControlListModel *model = new ControlListModel(this);
+        model->appendRow(new ControlListItem("Artists",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/artists_40x40.png"), model));
-        model->appendRow(new ControlListItem("Albums", QSize(30,350),
+        model->appendRow(new ControlListItem("Albums",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/albums_40x40.png"), model));
-        model->appendRow(new ControlListItem("Genres", QSize(30,350),
+        model->appendRow(new ControlListItem("Genres",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/genres_40x40.png"), model));
-        model->appendRow(new ControlListItem("Years", QSize(30,350),
+        model->appendRow(new ControlListItem("Years",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/years_40x40.png"), model));
-        model->appendRow(new ControlListItem("New Music", QSize(30,350),
+        model->appendRow(new ControlListItem("New Music",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/newmusic_40x40.png"), model));
-        model->appendRow(new ControlListItem("Random Mix", QSize(30,350),
+        model->appendRow(new ControlListItem("Random Mix",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/plugins/RandomPlay/html/images/icon_40x40.png"), model));
-        model->appendRow(new ControlListItem("Music Folder", QSize(30,350),
+        model->appendRow(new ControlListItem("Music Folder",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/musicfolder_40x40.png"), model));
-        model->appendRow(new ControlListItem("Playlists", QSize(30,350),
+        model->appendRow(new ControlListItem("Playlists",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/playlists_40x40.png"), model));
-        model->appendRow(new ControlListItem("Search", QSize(30,350),
+        model->appendRow(new ControlListItem("Search",
                                              QString("http://")+SqueezeBoxServerAddress+QString(":")+SqueezeBoxServerHttpPort+QString("/html/images/search_40x40.png"), model));
         controlHierarchy.insert("MusicScreen", model);
         rootContext()->setContextProperty("controlListModel", model);
@@ -302,7 +306,7 @@ void DeviceStatus::loadNowPlayingScreen(void)
     if( !controlHierarchy.contains("NowPlaying")) {
         QListIterator<TrackData> i( getCurrentPlaylist() );
 
-        ListModel *model = new ListModel(new ControlListItem, this);
+        ControlListModel *model = new ControlListModel(this);
         DEBUGF("There are currently " << getCurrentPlaylist().count() << " items in the playlist");
 
         while(i.hasNext()) {
@@ -321,7 +325,7 @@ void DeviceStatus::loadNowPlayingScreen(void)
                         .arg(QString(track.coverid))
                         .arg(QString("cover_40x40"));
             }
-            model->appendRow(new ControlListItem(QString(track.title +" - "+track.artist),QSize(30,350),urlString,QString(track.song_id)));
+            model->appendRow(new ControlListItem(QString(track.title +" - "+track.artist),urlString,QString(track.song_id)));
         }
         controlHierarchy.insert("NowPlaying", model);
         rootContext()->setContextProperty("controlListModel", model);
@@ -356,9 +360,11 @@ void DeviceStatus::NewSong(void)
     DEBUGF("");
     if(controlHierarchy.contains("NowPlaying") &&
             controlHierarchy.value("NowPlaying")->rowCount() >= m_devicePlaylistIndex) {
-        DEBUGF("ENOUGH INFO");
-        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_deviceOldPlaylistIndex))->setHighlight(false);
-        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_devicePlaylistIndex))->setHighlight(true);
+        emit playlistIndexChange(QVariant(m_devicePlaylistIndex));
+
+//        DEBUGF("ENOUGH INFO");
+//        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_deviceOldPlaylistIndex))->setHighlight(false);
+//        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_devicePlaylistIndex))->setHighlight(true);
     }
 }
 
@@ -366,11 +372,10 @@ void DeviceStatus::NewPlaylist(void)
 {
     DEBUGF("New Playlist");
     if(controlHierarchy.contains("NowPlaying")) {
-        ListModel *model = controlHierarchy.value("NowPlaying");
+        ControlListModel *model = controlHierarchy.value("NowPlaying");
         model->deleteLater();
         controlHierarchy.remove("NowPlaying");  // delete current playlist
     }
-    loadNowPlayingScreen();
 }
 
 void DeviceStatus::Mute(bool)

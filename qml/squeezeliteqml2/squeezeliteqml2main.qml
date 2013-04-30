@@ -25,14 +25,11 @@ Rectangle {
     signal prevTrack()
     signal volUp()
     signal volDown()
-//    signal controlClicked(int idx)
     signal controlClicked(string s)
 
     function setControlViewListIndex(idx) {
         controlClicked("index has been set")
-//        controlListView.setCurrentIndexItem(idx)
-//        controlListView.controlListModel[controlListView.currentIndex].setActive(false)
-//        controlListView.controlListModel[idx].setActive(true)
+        controlListView.currentIndex=idx
     }
 
     Rectangle {
@@ -47,17 +44,6 @@ Rectangle {
             width: 400
             radius: 3
             border.color: "#85c4b7"
-//            gradient: Gradient {
-//                GradientStop {
-//                    position: 0
-//                    color: "#000000"
-//                }
-
-//                GradientStop {
-//                    position: 1
-//                    color: "#ffffff"
-//                }
-//            }
             gradient: Gradient {
                 GradientStop {
                     position: 0
@@ -118,26 +104,6 @@ Rectangle {
                 width: 50
                 height: 50
                 color: "#645a5a5a"
-                //                states: [
-                //                    State {
-                //                        name:"pause"
-                //                        PropertyChanges {
-                //                            target: playImage;source:"icons/pause.png"
-                //                        }
-                //                    },
-                //                    State {
-                //                        name:"play"
-                //                        PropertyChanges {
-                //                            target: playImage;source:"icons/play.png"
-                //                        }
-                //                    },
-                //                    State {
-                //                        name:"stop"
-                //                        PropertyChanges {
-                //                            target: playImage;source:"icons/play.png"
-                //                        }
-                //                    }
-                //                ]
 
                 MouseArea {
                     signal playClicked
@@ -182,7 +148,6 @@ Rectangle {
             }
 
             Rectangle {
-                //                signal forwardClicked
                 id: forwardRect
                 x: 125
                 y: 338
@@ -213,27 +178,6 @@ Rectangle {
                 y: 338
                 width: 50
                 height: 50
-                color: "#645a5a5a"
-                //                states: [
-                //                    State {
-                //                        name:"noshuffle"
-                //                        PropertyChanges {
-                //                            target: shuffleImage;source:"icons/no_shuffle.png"
-                //                        }
-                //                    },
-                //                    State {
-                //                        name:"shuffle_by_song"
-                //                        PropertyChanges {
-                //                            target: shuffleImage;source:"icons/shuffle_by_song.png"
-                //                        }
-                //                    },
-                //                    State {
-                //                        name:"shuffle_by_album"
-                //                        PropertyChanges {
-                //                            target: shuffleImage;source:"icons/shuffle_by_album.png"
-                //                        }
-                //                    }
-                //                ]
                 MouseArea {
                     property int myState: 0
                     signal shuffleClicked
@@ -244,15 +188,12 @@ Rectangle {
                         myState += 1
                         myState %= 3    // stay within the 3 states of "no shuffle, shuffle by song, shuffle by album"
                         if( myState==0 ) {
-                            //                            shuffleRect.state="noshuffle"
                             shuffleImage.source="icons/no_shuffle.png"
                         }
                         else if( myState==1 ) {
-                            //                            shuffleRect.state="shuffle_by_song"
                             shuffleImage.source="icons/shuffle_by_song.png"
                         }
                         else if( myState==2 ) {
-                            //                            shuffleRect.state="shuffle_by_album"
                             shuffleImage.source="icons/shuffle_by_album.png"
                         }
                     }
@@ -276,27 +217,6 @@ Rectangle {
                 width: 50
                 height: 50
                 color: "#645a5a5a"
-                //                states: [
-                //                    State {
-                //                        name:"noRepeat"
-                //                        PropertyChanges {
-                //                            target: repeatImage; source: "icons/noRepeat.png"
-                //                        }
-                //                    },
-                //                    State {
-                //                        name:"repeatSong"
-                //                        PropertyChanges {
-                //                            target: repeatImage; source: "icons/repeatSong.png"
-                //                        }
-                //                    },
-                //                    State {
-                //                        name:"repeatAlbum"
-                //                        PropertyChanges {
-                //                            target: repeatImage; source: "icons/repeatAlbum.png"
-                //                        }
-                //                    }
-
-                //                ]
                 MouseArea {
                     property int myState: 0
                     signal repeatClicked
@@ -307,15 +227,12 @@ Rectangle {
                         myState += 1
                         myState %= 3    // stay within the 3 states of "no repeat, repeat song, repeat album"
                         if( myState==0 ) {
-                            //                            repeatRect.state="noRepeat"
                             repeatImage.source="icons/noRepeat.png"
                         }
                         else if( myState==1 ) {
-                            //                            repeatRect.state="repeatSong"
                             repeatImage.source='icons/repeatSong.png'
                         }
                         else if( myState==2 ) {
-                            //                            repeatRect.state="repeatAlbum"
                             repeatImage.source='icons/repeatAlbum.png'
                         }
                     }
@@ -574,145 +491,128 @@ Rectangle {
                 }
             }
 
+            //                Component {
+            //                    id: highlight
+            //                    Rectangle {
+            //                        width: 180; height: 40
+            //                        color: "lightsteelblue"; radius: 5
+            //                        y: list_view1.currentItem.y
+            //                        Behavior on y {
+            //                            SpringAnimation {
+            //                                spring: 3
+            //                                damping: 0.2
+            //                            }
+            //                        }
+            //                    }
+            //                }
+
+            //            }
+
             ListView {
                 id: controlListView
                 y: 333
                 width: 400
                 height: 350
-                z: 2
                 anchors.left: parent.left
                 anchors.leftMargin: 0
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: 0
-                property int oldIndex: 0
+                highlight: highlight
+                highlightFollowsCurrentItem: false
+                focus: true
 
-                function setHighlight(idx) {
-                    controlListView[oldIndex].setActive(false)
-                    controlListView[idx].setActive(true)
-                    oldIndex=idx
-                }
-
-
-//                onCurrentIndexChanged {
-//                    controlListModel[currentIndex].setActive(true)
-//                }
-
-//                function setCurrentIndexItem( idx ) {
-//                    controlListModel[currentIndex].setActive(false)
-//                    currentIndex=idx
-//                    controlListModel[currentIndex].setActive(true)
-//                }
-
-//                Item {
-//                    Connections {
-//                        target: imageViewer
-//                        onImageChanged: console.log("Image has changed!")
-//                    }
-//                }
                 model: controlListModel
-                delegate: ControlListDelegate {
-                    property bool myHighlight: false
-                    Row {
-                        id: row1
-                        spacing: 10
-                        Image {
-                            width: 40
-                            height: 40
-                            source: image
-                        }
+                delegate: listDelegate
 
-//                        Rectangle {
-//                            width: 40
-//                            height: 40
-//                        }
-
-//                        function getHighlight() {
-//                            return highlight
-//                        }
-
-                        Text {
-                            text: name
-                            anchors.verticalCenter: parent.verticalCenter
-                            font {
-                                pointSize: 10
-                                bold: true
-                            }
-                            color: "white"
-                        }
-                    }
-                    PlayingHighlight {
-                        visible: highlight
-                    }
-//                    PlayingHighlight.visible: highlight
-                }
-
-
-//                delegate: Item {
-//                    x: 5
-//                    height: 40
-
-//                    Text {
-//                        anchors.fill: parent;
-//                        text: name +" ("+size+")"
-//                    }
-//                    MouseArea {
-//                        anchors.fill: parent
-//                        onClicked: main.controlClicked(model.index)
-
-////                        onClicked:{
-////                           console.log("test");
-////                        }
-//                        //                        onClicked:
-//                        //                            Item
-//                        //                        {
-
-//                        //                    }
-
-//                    }
-//                }
-
-
-
-                //                delegate: Item {
-                //                    x: 5
-                //                    height: 40
+                //                delegate: ControlListDelegate {
                 //                    Row {
                 //                        id: row1
                 //                        spacing: 10
-                //                        Rectangle {
+                //                        Image {
                 //                            width: 40
                 //                            height: 40
-                //                            color: colorCode
+                //                            source: image
                 //                        }
 
                 //                        Text {
                 //                            text: name
                 //                            anchors.verticalCenter: parent.verticalCenter
-                //                            font.bold: true
+                //                            font {
+                //                                pointSize: 10
+                //                                bold: true
+                //                            }
+                //                            color: "white"
+                //                        }
+                //                    }
+                //                    Component {
+                //                        id: highlight
+                //                        BorderImage {
+                //                            anchors.fill: parent
+                //                            source: "icons/controlHighlight.png"
+                //                            Behavior on y {
+                //                                SpringAnimation {
+                //                                    spring: 3
+                //                                    damping: 0.2
+                //                                }
+                //                            }
                 //                        }
                 //                    }
                 //                }
-                //                model: ListModel {
-                //                    ListElement {
-                //                        name: "Grey"
-                //                        colorCode: "grey"
-                //                    }
+                Component {
+                    id: listDelegate
+                    Item {
+                        x: 5
+                        height: 40
+                        width: controlListView.width
+                        Row {
+                            id: row1
+                            spacing: 10
+                            Image {
+                                width: 40
+                                height: 40
+                                source: image
+                            }
 
-                //                    ListElement {
-                //                        name: "Red"
-                //                        colorCode: "red"
-                //                    }
+                            Text {
+                                text: name
+                                anchors.verticalCenter: parent.verticalCenter
+                                font {
+                                    pointSize: 10
+                                    bold: true
+                                }
+                                color: "white"
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                controlListView.currentIndex=index
+                                main.controlClicked(index)
+                            }
 
-                //                    ListElement {
-                //                        name: "Blue"
-                //                        colorCode: "blue"
-                //                    }
+                            onPressAndHold: {
+                                controlListView.controlPressAndHold(type)
+                            }
+                        }
+                    }
+                }
 
-                //                    ListElement {
-                //                        name: "Green"
-                //                        colorCode: "green"
-                //                    }
-                //                }
+                Component {
+                    id: highlight
+                    Image {
+                        source: "icons/controlHighlight.png"
+                        width: controlListView.width; height: 40
+                        y: controlListView.currentItem.y
+                        Behavior on y {
+                            SpringAnimation {
+                                spring: 3
+                                damping: 0.2
+                            }
+                        }
+                    }
+                }
+
+
             }
         }
     }
