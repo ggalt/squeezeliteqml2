@@ -45,6 +45,7 @@ public slots:
 
     void initInterfaceConnections(void);
     void shuffleState(int state);
+    void repeatState(int state);
     void nextTrackClicked(void);
     void prevTrackClicked(void);
     void playState(int state);

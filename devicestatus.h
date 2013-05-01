@@ -25,7 +25,12 @@ public:
 signals:
     void issueCommand(QByteArray cmd);
     void playlistIndexChange(QVariant newidx);
+    void updateAlbumCover(QVariant imageURL);
     void deviceStatusReady(void);
+    void playStatus(QVariant mode);
+    void shuffleStatus(QVariant mode);
+    void repeatStatus(QVariant mode);
+    void progress(QVariant percent);
     
 public slots:
     void processDeviceStatusMsg(QByteArray msg);

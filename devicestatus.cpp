@@ -38,7 +38,11 @@ void DeviceStatus::Init(QString serverAddr, QString httpPort)
 
     DEBUGF("Initialize Interface");
     // set source
+    qmlRegisterType<ControlListModel>("net.galtfamily.controlListModel",1,0,"ControlListModel");
+    //    qmlRegisterType<ControlListItem>("net.galtfamily.controllistitem",1,0,"ControlListItem");
     setSource(QUrl::fromLocalFile("qml/squeezeliteqml2/squeezeliteqml2main.qml"));
+
+
 
     SqueezeBoxServerAddress = serverAddr;
     SqueezeBoxServerHttpPort = httpPort;
@@ -134,7 +138,7 @@ void DeviceStatus::processDeviceStatusMsg(QByteArray msg)
         emit deviceStatusReady();
     }
     loadNowPlayingScreen();
-    emit playlistIndexChange(QVariant(1));
+    emit playlistIndexChange(QVariant(0));
     qDebug() << "index message sent";
 }
 
@@ -170,18 +174,18 @@ void DeviceStatus::processPlaylistInteractionMsg(QByteArray msg)
             NewSong();
         }
     }
-//    else if(msg.left(13) == "playlist jump") { // it's a subscribed message regarding a new song playing on the playlist, so process it
-//        DEBUGF("jump");
-//        m_devicePlaylistIndex = msg.right(msg.lastIndexOf(' ')).toInt();
-//        if(devicePlaylistIndex >= devicePlaylistCount) {
-//            DEBUGF("Warning: playlist index is greater than the playlist size\nIndex: " << devicePlaylistIndex << "\tCount: " << devicePlaylistCount);
-//            SendDeviceCommand(QString("status 0 1000 tags:g,a,l,t,y,d,J \n"));
-//        }
-//        else {
-//            slotUpdateplaylistCoverFlow();  // update playlistCoverFlow to new song index
-//            emit NewSong();
-//        }
-//    }
+    //    else if(msg.left(13) == "playlist jump") { // it's a subscribed message regarding a new song playing on the playlist, so process it
+    //        DEBUGF("jump");
+    //        m_devicePlaylistIndex = msg.right(msg.lastIndexOf(' ')).toInt();
+    //        if(devicePlaylistIndex >= devicePlaylistCount) {
+    //            DEBUGF("Warning: playlist index is greater than the playlist size\nIndex: " << devicePlaylistIndex << "\tCount: " << devicePlaylistCount);
+    //            SendDeviceCommand(QString("status 0 1000 tags:g,a,l,t,y,d,J \n"));
+    //        }
+    //        else {
+    //            slotUpdateplaylistCoverFlow();  // update playlistCoverFlow to new song index
+    //            NewSong();
+    //        }
+    //    }
     else if(msg.left(19) == "playlist loadtracks") { // it's a subscribed message regarding a new playlist, so process it
         //    SendDeviceCommand(QString("status 0 1000 tags:g,a,l,t,y,d,J \n"));
         emit issueCommand(QByteArray("status 0 1000 tags:g,a,l,t,e,y,d,c \n"));
@@ -218,24 +222,24 @@ void DeviceStatus::processPlaylistInteractionMsg(QByteArray msg)
     else if(msg.left(5) == "pause") {
         if(msg.endsWith("1")) {
             m_isPlaying = false;
-            emit ModeChange("PAUSE");
+            emit playStatus(QVariant(PAUSE));
         }
         else {
             m_isPlaying = true;
-            emit ModeChange("PLAY");
+            emit playStatus(QVariant(PLAY));
         }
     }
     else if(msg.left(9) == "mode play") { // current playing mode of "play", "pause" "stop"
         m_isPlaying = true;
-        emit ModeChange("PLAY");
+        emit playStatus(QVariant(PLAY));
     }
     else if(msg.left(10) == "mode pause") { // current playing mode of "play", "pause" "stop"
         m_isPlaying = false;
-        emit ModeChange("PAUSE");
+        emit playStatus(QVariant(PAUSE));
     }
     else if(msg.left(9) == "mode stop") { // current playing mode of "play", "pause" "stop"
         m_isPlaying = false;
-        emit ModeChange("STOP");
+        emit playStatus(QVariant(STOP));
     }
     else if(msg.left(6) == "status") { // this is a status message, probably because of a new playlist or song
         processDeviceStatusMsg(msg);
@@ -361,10 +365,18 @@ void DeviceStatus::NewSong(void)
     if(controlHierarchy.contains("NowPlaying") &&
             controlHierarchy.value("NowPlaying")->rowCount() >= m_devicePlaylistIndex) {
         emit playlistIndexChange(QVariant(m_devicePlaylistIndex));
+        TrackData track = getCurrentPlaylist().at(m_devicePlaylistIndex);
+        QString imageURL = QString("http://%1:%2/music/%3/%4")
+                .arg(SqueezeBoxServerAddress)
+                .arg(SqueezeBoxServerHttpPort)
+                .arg(QString(track.coverid))
+                .arg(QString("cover_300x300"));
+        emit updateAlbumCover(QVariant(imageURL));
 
-//        DEBUGF("ENOUGH INFO");
-//        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_deviceOldPlaylistIndex))->setHighlight(false);
-//        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_devicePlaylistIndex))->setHighlight(true);
+
+        //        DEBUGF("ENOUGH INFO");
+        //        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_deviceOldPlaylistIndex))->setHighlight(false);
+        //        dynamic_cast<ControlListItem*>(controlHierarchy.value("NowPlaying")->getRow(m_devicePlaylistIndex))->setHighlight(true);
     }
 }
 

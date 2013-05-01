@@ -216,7 +216,12 @@ void AudioPlayer::initInterfaceConnections(void)
     connect(v,SIGNAL(volUp()), this,SLOT(volUp()));
     connect(v,SIGNAL(volDown()), this,SLOT(volDown()));
     connect(v,SIGNAL(controlClicked(QString)), devViewer,SLOT(controlViewClicked(QString)));
+    connect(v,SIGNAL(shuffle(int)), this,SLOT(shuffleState(int)));
+    connect(v,SIGNAL(repeat(int)), this,SLOT(repeatState(int)));
     connect(devViewer,SIGNAL(playlistIndexChange(QVariant)), v, SLOT(setControlViewListIndex(QVariant)));
+    connect(devViewer,SIGNAL(updateAlbumCover(QVariant)), v,SLOT(updateAlbumCover(QVariant)));
+    connect(devViewer,SIGNAL(playStatus(QVariant)), v, SLOT(updatePlayMode(QVariant)));
+
 /*
  *  messages from device that need to be connected to slots
     void playlistIndexChange(QVariant newidx);
@@ -231,6 +236,25 @@ void AudioPlayer::initInterfaceConnections(void)
 void AudioPlayer::shuffleState(int state)
 {
     DEBUGF("");
+    if(state==SHUFFLE_OFF) {
+        cli->SendCommand(QByteArray("playlist shuffle 0\n"));
+    } else if(state==SHUFFLE_BY_SONG) {
+        cli->SendCommand(QByteArray("playlist shuffle 1\n"));
+    } else if(state==SHUFFLE_BY_ALBUM) {
+        cli->SendCommand(QByteArray("playlist shuffle 2\n"));
+    }
+}
+
+void AudioPlayer::repeatState(int state)
+{
+    DEBUGF("");
+    if(state==REPEAT_OFF) {
+        cli->SendCommand(QByteArray("playlist repeat 0\n"));
+    } else if(state==REPEAT_TRACK) {
+        cli->SendCommand(QByteArray("playlist repeat 1\n"));
+    } else if(state==REPEAT_PLAYLIST) {
+        cli->SendCommand(QByteArray("playlist repeat 2\n"));
+    }
 }
 
 void AudioPlayer::nextTrackClicked(void)

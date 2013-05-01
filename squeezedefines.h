@@ -46,9 +46,9 @@
 
 // uncomment the following to turn on debugging for a particular file
 // #define SQUEEZEMAINWINDOW_DEBUG
-#define AUDIOPLAYER_DEBUG
+//#define AUDIOPLAYER_DEBUG
 //#define SLIMCLI_DEBUG
-#define SLIMDEVICE_DEBUG
+//#define SLIMDEVICE_DEBUG
 // #define SLIMDATABASE_DEBUG
 // #define SLIMSERVERINFO_DEBUG
 // #define SQUEEZEDISPLAY_DEBUG
@@ -97,15 +97,13 @@ enum playerMode
 enum RepeatMode
 { REPEAT_OFF = 0,
   REPEAT_TRACK,
-  REPEAT_ALL,
+  REPEAT_PLAYLIST,
   MAX_REPEAT_MODES
 };
 enum ShuffleMode
 { SHUFFLE_OFF = 0,
-  SHUFFLE_RANDOM,
-  SHUFFLE_INTELLIGENT,
-  SHUFFLE_ALBUM,
-  SHUFFLE_ARTIST,
+  SHUFFLE_BY_SONG,
+  SHUFFLE_BY_ALBUM,
   MAX_SHUFFLE_MODES
 };
 

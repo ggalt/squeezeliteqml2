@@ -1,5 +1,7 @@
 import QtQuick 2.0
 import "components"
+import net.galtfamily.controlListModel 1.0
+//import net.galtfamily.controllistitem 1.0
 
 //import QtQuick 1.0
 
@@ -30,6 +32,28 @@ Rectangle {
     function setControlViewListIndex(idx) {
         controlClicked("index has been set")
         controlListView.currentIndex=idx
+    }
+
+    function updateAlbumCover(imageurl) {
+        coverImage.source=imageurl
+    }
+
+    function updatePlayMode(mode) {
+        playRect.myState=mode
+        if( playRect.myState==0 ) {  // state 0 == play, so show pause Icon so person knows what to push for pause
+            playImage.source="icons/pause.png"
+        }
+        else if( playRect.myState==1 ) { // state 1 == pause, so show pause Icon so person knows what to push for play
+            playImage.source="icons/play.png"
+        }
+    }
+
+    function updateShuffleMode(mode) {
+        shuffleRect.myState=mode
+    }
+
+    function updateRepeatMode(mode) {
+        repeatRect.myState=mode
     }
 
     Rectangle {
@@ -104,33 +128,33 @@ Rectangle {
                 width: 50
                 height: 50
                 color: "#645a5a5a"
+                property int myState: 1 // start off paused, states are PLAY=0, PAUSE=1, STOP=2
 
                 MouseArea {
                     signal playClicked
                     signal playPressed
-                    property int myState: 1 // start off paused
                     id: playMouseArea
                     anchors.fill: parent
                     onClicked: playClicked()
                     onPressed: playPressed()
 
                     onPlayPressed: {
-                        if( myState==0 ) {  // currently playing, so paused icon displayed
+                        if( playRect.myState==0 ) {  // currently playing, so paused icon displayed
                             playImage.source="icons/pause_pressed.png"
                         }
-                        if( myState==1 ) {  // currently paused, so playing icon displayed
+                        if( playRect.myState==1 ) {  // currently paused, so playing icon displayed
                             playImage.source="icons/play_pressed.png"
                         }
                     }
 
                     onPlayClicked: {
-                        myState += 1
-                        myState %= 2    // stay within the 2 states of "pause and play"
-                        main.play(myState)
-                        if( myState==0 ) {  // state 0 == play, so show pause Icon so person knows what to push for pause
+                        playRect.myState += 1
+                        playRect.myState %= 2    // stay within the 2 states of "pause and play"
+                        main.play(playRect.myState)
+                        if( playRect.myState==0 ) {  // state 0 == play, so show pause Icon so person knows what to push for pause
                             playImage.source="icons/pause.png"
                         }
-                        else if( myState==1 ) { // state 1 == pause, so show pause Icon so person knows what to push for play
+                        else if( playRect.myState==1 ) { // state 1 == pause, so show pause Icon so person knows what to push for play
                             playImage.source="icons/play.png"
                         }
                     }
@@ -178,22 +202,23 @@ Rectangle {
                 y: 338
                 width: 50
                 height: 50
+                property int myState: 0
                 MouseArea {
-                    property int myState: 0
                     signal shuffleClicked
                     id: shuffleMouseArea
                     anchors.fill: parent
                     onClicked: shuffleClicked()
                     onShuffleClicked: {
-                        myState += 1
-                        myState %= 3    // stay within the 3 states of "no shuffle, shuffle by song, shuffle by album"
-                        if( myState==0 ) {
+                        shuffleRect.myState += 1
+                        shuffleRect.myState %= 3    // stay within the 3 states of "no shuffle, shuffle by song, shuffle by album"
+                        main.shuffle(shuffleRect.myState)
+                        if( shuffleRect.myState==0 ) {
                             shuffleImage.source="icons/no_shuffle.png"
                         }
-                        else if( myState==1 ) {
+                        else if( shuffleRect.myState==1 ) {
                             shuffleImage.source="icons/shuffle_by_song.png"
                         }
-                        else if( myState==2 ) {
+                        else if( shuffleRect.myState==2 ) {
                             shuffleImage.source="icons/shuffle_by_album.png"
                         }
                     }
@@ -217,22 +242,23 @@ Rectangle {
                 width: 50
                 height: 50
                 color: "#645a5a5a"
+                property int myState: 0
                 MouseArea {
-                    property int myState: 0
                     signal repeatClicked
                     id: repeatMouseArea
                     anchors.fill: parent
                     onClicked: repeatClicked()
                     onRepeatClicked: {
-                        myState += 1
-                        myState %= 3    // stay within the 3 states of "no repeat, repeat song, repeat album"
-                        if( myState==0 ) {
+                        repeatRect.myState += 1
+                        repeatRect.myState %= 3    // stay within the 3 states of "no repeat, repeat song, repeat album"
+                        main.repeat(repeatRect.myState)
+                        if( repeatRect.myState==0 ) {
                             repeatImage.source="icons/noRepeat.png"
                         }
-                        else if( myState==1 ) {
+                        else if( repeatRect.myState==1 ) {
                             repeatImage.source='icons/repeatSong.png'
                         }
-                        else if( myState==2 ) {
+                        else if( repeatRect.myState==2 ) {
                             repeatImage.source='icons/repeatAlbum.png'
                         }
                     }
@@ -321,21 +347,36 @@ Rectangle {
 
             Rectangle {
                 id: volRect
-                x: 358
-                y: 150
-                width: 20
-                height: 200
+                x: 345
+                y: 47
+                width: 40
+                height: 305
                 color: "#00000000"
                 anchors.right: parent.right
-                anchors.rightMargin: 25
+                anchors.rightMargin: 15
                 anchors.bottom: parent.bottom
-                anchors.bottomMargin: 50
+                anchors.bottomMargin: 48
                 z: 1
 
-                Image {
-                    id: volImage
+                Rectangle {
+                    id: currentVol
+                    color: "#ffffff"
                     anchors.fill: parent
-                    source: "icons/volRect.png"
+                    gradient: Gradient {
+                        GradientStop {
+                            position: 0.00;
+                            color: "cyan";
+                        }
+                        GradientStop {
+                            position: 0.5;
+                            color: "lightblue";
+                        }
+                    }
+                }
+
+                MouseArea {
+                    id: volMouseArea
+                    anchors.fill: parent
                 }
             }
 
@@ -346,7 +387,8 @@ Rectangle {
                 width: 325
                 height: 16
                 color: "#00000000"
-                border.color: "#7a7a7a"
+                radius: 8
+                border.color: "#000000"
                 anchors.right: parent.right
                 anchors.rightMargin: 70
                 anchors.bottom: parent.bottom
@@ -491,22 +533,6 @@ Rectangle {
                 }
             }
 
-            //                Component {
-            //                    id: highlight
-            //                    Rectangle {
-            //                        width: 180; height: 40
-            //                        color: "lightsteelblue"; radius: 5
-            //                        y: list_view1.currentItem.y
-            //                        Behavior on y {
-            //                            SpringAnimation {
-            //                                spring: 3
-            //                                damping: 0.2
-            //                            }
-            //                        }
-            //                    }
-            //                }
-
-            //            }
 
             ListView {
                 id: controlListView
@@ -524,40 +550,6 @@ Rectangle {
                 model: controlListModel
                 delegate: listDelegate
 
-                //                delegate: ControlListDelegate {
-                //                    Row {
-                //                        id: row1
-                //                        spacing: 10
-                //                        Image {
-                //                            width: 40
-                //                            height: 40
-                //                            source: image
-                //                        }
-
-                //                        Text {
-                //                            text: name
-                //                            anchors.verticalCenter: parent.verticalCenter
-                //                            font {
-                //                                pointSize: 10
-                //                                bold: true
-                //                            }
-                //                            color: "white"
-                //                        }
-                //                    }
-                //                    Component {
-                //                        id: highlight
-                //                        BorderImage {
-                //                            anchors.fill: parent
-                //                            source: "icons/controlHighlight.png"
-                //                            Behavior on y {
-                //                                SpringAnimation {
-                //                                    spring: 3
-                //                                    damping: 0.2
-                //                                }
-                //                            }
-                //                        }
-                //                    }
-                //                }
                 Component {
                     id: listDelegate
                     Item {
