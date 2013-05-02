@@ -210,17 +210,23 @@ void AudioPlayer::initInterfaceConnections(void)
     DEBUGF("Initialize Interface Connections");
 
     QQuickItem *v = devViewer->rootObject();
+    // interface signals to application
     connect(v,SIGNAL(play(int)), this,SLOT(playState(int)));
     connect(v,SIGNAL(nextTrack()), this,SLOT(nextTrackClicked()));
     connect(v,SIGNAL(prevTrack()), this,SLOT(prevTrackClicked()));
     connect(v,SIGNAL(volUp()), this,SLOT(volUp()));
     connect(v,SIGNAL(volDown()), this,SLOT(volDown()));
+    connect(v,SIGNAL(setVolume(int)), this,SLOT(setVolume(int)));
     connect(v,SIGNAL(controlClicked(QString)), devViewer,SLOT(controlViewClicked(QString)));
     connect(v,SIGNAL(shuffle(int)), this,SLOT(shuffleState(int)));
     connect(v,SIGNAL(repeat(int)), this,SLOT(repeatState(int)));
+//    connect(v,SIGNAL(playButtonClicked()),this,SLOT(playPauseToggle()));
+
+    // application signals to interface
     connect(devViewer,SIGNAL(playlistIndexChange(QVariant)), v, SLOT(setControlViewListIndex(QVariant)));
     connect(devViewer,SIGNAL(updateAlbumCover(QVariant)), v,SLOT(updateAlbumCover(QVariant)));
     connect(devViewer,SIGNAL(playStatus(QVariant)), v, SLOT(updatePlayMode(QVariant)));
+    connect(devViewer,SIGNAL(VolumeChange(QVariant)), v,SLOT(setMainVolume(QVariant)));
 
 /*
  *  messages from device that need to be connected to slots
@@ -281,6 +287,17 @@ void AudioPlayer::playState(int state)
     DEBUGF("PlayerState" << state)
 }
 
+void AudioPlayer::playPauseToggle(void)
+{
+    devViewer->togglePlayState();   // toggle the play state
+    if(devViewer->getPlayState()==PLAY){
+        cli->SendCommand(QByteArray("play"));
+    }
+    else {
+        cli->SendCommand(QByteArray("pause"));
+    }
+}
+
 void AudioPlayer::volUp(void)
 {
     cli->SendCommand(QByteArray("button volup\n"));
@@ -289,6 +306,13 @@ void AudioPlayer::volUp(void)
 void AudioPlayer::volDown(void)
 {
     cli->SendCommand(QByteArray("button voldown\n"));
+}
+
+void AudioPlayer::setVolume(int vol)
+{
+    devViewer->setVolume(vol);
+    QByteArray volume = QByteArray::number(vol);
+    cli->SendCommand(QByteArray("mixer volume ") + volume + QByteArray("\n"));
 }
 
 void AudioPlayer::getplayerMACAddress( void )

@@ -7,6 +7,7 @@ import net.galtfamily.controlListModel 1.0
 
 Rectangle {
     id: main
+    property alias volume: currentVol.curVol
     width: 800
     height: 400
     gradient: Gradient {
@@ -27,7 +28,20 @@ Rectangle {
     signal prevTrack()
     signal volUp()
     signal volDown()
+    signal setVolume(int vol)
     signal controlClicked(string s)
+
+    onVolumeChanged: {
+        if(main.volume>100)
+            main.volume=100
+        else if(main.volume<0)
+            main.volume=0
+        currentVol.height = (volRect.height * main.volume)/100
+    }
+
+    function setMainVolume(vol) {
+        main.volume=vol
+    }
 
     function setControlViewListIndex(idx) {
         controlClicked("index has been set")
@@ -39,13 +53,9 @@ Rectangle {
     }
 
     function updatePlayMode(mode) {
-        playRect.myState=mode
-        if( playRect.myState==0 ) {  // state 0 == play, so show pause Icon so person knows what to push for pause
-            playImage.source="icons/pause.png"
-        }
-        else if( playRect.myState==1 ) { // state 1 == pause, so show pause Icon so person knows what to push for play
-            playImage.source="icons/play.png"
-        }
+        console.debug("updatePlayMode")
+        console.debug(mode)
+        playRect.setButtonState(mode)
     }
 
     function updateShuffleMode(mode) {
@@ -130,39 +140,44 @@ Rectangle {
                 color: "#645a5a5a"
                 property int myState: 1 // start off paused, states are PLAY=0, PAUSE=1, STOP=2
 
+                function setButtonState(newstate) {
+                    myState=newstate
+                    updateButtonIcon()
+                }
+
+                function updateButtonIcon() {
+                    if(myState==0) {        // currently playing, so paused icon displayed
+                        playImage.source="qrc:/icons/qml/squeezeliteqml2/icons/pause.png"
+                    } else { // assume we're paused (though possibly "stopped"), so play icon displayed
+                        playImage.source="qrc:/icons/qml/squeezeliteqml2/icons/play.png"
+                    }
+                }
+
                 MouseArea {
-                    signal playClicked
-                    signal playPressed
                     id: playMouseArea
                     anchors.fill: parent
-                    onClicked: playClicked()
-                    onPressed: playPressed()
-
-                    onPlayPressed: {
-                        if( playRect.myState==0 ) {  // currently playing, so paused icon displayed
-                            playImage.source="icons/pause_pressed.png"
-                        }
-                        if( playRect.myState==1 ) {  // currently paused, so playing icon displayed
-                            playImage.source="icons/play_pressed.png"
-                        }
-                    }
-
-                    onPlayClicked: {
+                    onClicked: {
                         playRect.myState += 1
                         playRect.myState %= 2    // stay within the 2 states of "pause and play"
+                        playRect.updateButtonIcon()
+                        console.debug("myState")
+                        console.debug(playRect.myState)
                         main.play(playRect.myState)
-                        if( playRect.myState==0 ) {  // state 0 == play, so show pause Icon so person knows what to push for pause
-                            playImage.source="icons/pause.png"
+                    }
+
+                    onPressed: {
+                        if( playRect.myState==0 ) {  // currently playing, so paused icon displayed
+                            playImage.source="qrc:/icons/qml/squeezeliteqml2/icons/pause_pressed.png"
                         }
-                        else if( playRect.myState==1 ) { // state 1 == pause, so show pause Icon so person knows what to push for play
-                            playImage.source="icons/play.png"
+                        if( playRect.myState==1 ) {  // currently paused, so playing icon displayed
+                            playImage.source="qrc:/icons/qml/squeezeliteqml2/icons/play_pressed.png"
                         }
                     }
                 }
 
                 Image {
                     id: playImage
-                    source: "icons/play.png"
+                    source: "qrc:/icons/qml/squeezeliteqml2/icons/play.png"
                     anchors.fill: parent
                 }
                 anchors.rightMargin: 285
@@ -170,6 +185,43 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
             }
+
+//            PlayButton {
+//                id: playButton
+//                x: 65
+//                y: 338
+//                width: 50
+//                height: 50
+//                property int mystate: 1
+
+//                MouseArea {
+//                    id: buttonMouseArea
+//                    anchors.fill: parent
+//                    onClicked: main.playButtonClicked()
+//                    onPressed: {
+//                        if(playButton.mystate==0) { //showing pause button in the "playState"
+//                            console.debug("pausepressed button showing")
+//                            playButton.btnImage.source="qrc:/icons/qml/squeezeliteqml2/icons/pause_pressed.png"
+//                        }
+//                        else if(playButton.mystate==1) // showing play button in the "pauseState"
+//                            playButton.btnImage.source="qrc:/icons/qml/squeezeliteqml2/icons/play_pressed.png"
+//                    }
+//                }
+
+//                function updateState(newstate) { // states are PLAY=0, PAUSE=1, STOP=2
+//                    console.debug("updateState called with state")
+//                    if(newstate===0) {
+//                        buttonState = 'playState'
+//                        playButton.mystate = 0
+//                    } else if(newstate===1) {
+//                        buttonState = 'pauseState'
+//                        playButton.mystate = 1
+//                    } else if(newstate===2) {   // we don't support "stop" so we'll just pause
+//                        buttonState = 'pauseState'
+//                        playButton.mystate = 1
+//                    }
+//                }
+//            }
 
             Rectangle {
                 id: forwardRect
@@ -298,7 +350,10 @@ Rectangle {
                 MouseArea {
                     id: volDownMouseArea
                     anchors.fill: parent
-                    onClicked: main.volDown()
+                    onClicked: {
+                        main.volDown()
+                        main.volume-=1
+                    }
                 }
 
                 Image {
@@ -331,7 +386,10 @@ Rectangle {
                 MouseArea {
                     id: volUpMouseArea
                     anchors.fill: parent
-                    onClicked: main.volUp()
+                    onClicked: {
+                        main.volUp()
+                        main.volume+=1
+                    }
                 }
 
                 Image {
@@ -352,6 +410,7 @@ Rectangle {
                 width: 40
                 height: 305
                 color: "#00000000"
+                border.color: "#00ffff"
                 anchors.right: parent.right
                 anchors.rightMargin: 15
                 anchors.bottom: parent.bottom
@@ -360,16 +419,20 @@ Rectangle {
 
                 Rectangle {
                     id: currentVol
+                    property int curVol: 0
                     color: "#ffffff"
-                    anchors.fill: parent
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    anchors.left: parent.left
                     gradient: Gradient {
                         GradientStop {
-                            position: 0.00;
-                            color: "cyan";
+                            position: 0
+                            color: "#00ffff"
                         }
+
                         GradientStop {
-                            position: 0.5;
-                            color: "lightblue";
+                            position: 0.5
+                            color: "#add8e6"
                         }
                     }
                 }
@@ -377,6 +440,10 @@ Rectangle {
                 MouseArea {
                     id: volMouseArea
                     anchors.fill: parent
+                    onClicked: {
+                        main.volume = 100*(volRect.height-mouseY)/volRect.height
+                        main.setVolume(main.volume)
+                    }
                 }
             }
 
@@ -602,14 +669,6 @@ Rectangle {
                             }
                         }
                     }
-                }
-
-                StateButton {
-                    id: statebutton1
-                    x: 171
-                    y: 201
-                    width: 60
-                    height: 60
                 }
 
 

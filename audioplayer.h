@@ -49,8 +49,10 @@ public slots:
     void nextTrackClicked(void);
     void prevTrackClicked(void);
     void playState(int state);
+    void playPauseToggle(void);
     void volUp(void);
     void volDown(void);
+    void setVolume(int vol);
 
 private:
     void getplayerMACAddress(void);

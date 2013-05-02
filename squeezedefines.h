@@ -91,7 +91,8 @@ enum playerMode
 {
     PLAY=0,
     PAUSE,
-    STOP
+    STOP,
+    MAX_PLAY_MODES
 };
 
 enum RepeatMode

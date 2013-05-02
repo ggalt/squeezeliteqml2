@@ -4,6 +4,8 @@
 #include <QObject>
 #include <QQuickView>
 
+#include "squeezedefines.h"
+
 class playerInterface : public QQuickView
 {
     Q_OBJECT
@@ -17,6 +19,13 @@ public:
 signals:
     
 public slots:
+
+private:
+    playerMode m_playState;
+    RepeatMode m_repeatState;
+    ShuffleMode m_shuffleState;
+
+    int m_volume;
     
 };
 

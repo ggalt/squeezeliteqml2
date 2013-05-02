@@ -28,6 +28,7 @@ DeviceStatus::DeviceStatus(QWindow *parent) :
     //    TrackData m_currentTrack;
     //    QByteArray m_deviceCurrentSongTime; // time into current song
     //    QByteArray m_deviceCurrentSongDuration; // length of current song
+    m_playState = MAX_PLAY_MODES;
     m_deviceInitialized = false;
 }
 
@@ -216,30 +217,48 @@ void DeviceStatus::processPlaylistInteractionMsg(QByteArray msg)
                 m_deviceVol = QByteArray::number(m_deviceVol.toInt() + vol);
             else
                 m_deviceVol = QByteArray::number(vol);
-            emit VolumeChange(m_deviceVol.toInt());
+            emit VolumeChange(QVariant(vol));
         }
     }
     else if(msg.left(5) == "pause") {
-        if(msg.endsWith("1")) {
+        if(msg.length()==5) { // only the "pause" message meaning to toggle the current state
+            if(m_playState==MAX_PLAY_MODES) {
+                m_playState=PAUSE;
+            } else {
+                m_playState+=1;
+                m_playState%=2;
+            }
+//            emit playStatus(QVariant(m_playState));
+        } else if(msg.endsWith("1")) {
             m_isPlaying = false;
-            emit playStatus(QVariant(PAUSE));
+            if(m_playState==MAX_PLAY_MODES) {   // we haven't set this yet, so establish interface status
+                emit playStatus(QVariant(PAUSE));
+            }
+            m_playState = PAUSE;
         }
         else {
             m_isPlaying = true;
-            emit playStatus(QVariant(PLAY));
+            if(m_playState==MAX_PLAY_MODES) {   // we haven't set this yet, so establish interface status
+                emit playStatus(QVariant(PAUSE));
+                m_playState = PAUSE;
+            } else
+                m_playState = PLAY;
         }
     }
     else if(msg.left(9) == "mode play") { // current playing mode of "play", "pause" "stop"
         m_isPlaying = true;
-        emit playStatus(QVariant(PLAY));
+        m_playState = PLAY;
+        emit playStatus(QVariant(m_playState));
     }
     else if(msg.left(10) == "mode pause") { // current playing mode of "play", "pause" "stop"
         m_isPlaying = false;
-        emit playStatus(QVariant(PAUSE));
+        m_playState = PAUSE;
+        emit playStatus(QVariant(m_playState));
     }
     else if(msg.left(9) == "mode stop") { // current playing mode of "play", "pause" "stop"
         m_isPlaying = false;
-        emit playStatus(QVariant(STOP));
+        m_playState = STOP;
+        emit playStatus(QVariant(m_playState));
     }
     else if(msg.left(6) == "status") { // this is a status message, probably because of a new playlist or song
         processDeviceStatusMsg(msg);
@@ -405,8 +424,9 @@ void DeviceStatus::Mute(bool)
 
 }
 
-void DeviceStatus::VolumeChange(int)
+void DeviceStatus::setVolume(int vol)
 {
+    m_deviceVol = QByteArray::number(vol);
     DEBUGF("");
 
 }

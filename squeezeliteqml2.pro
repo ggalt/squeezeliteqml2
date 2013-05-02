@@ -34,3 +34,6 @@ qtcAddDeployment()
 OTHER_FILES += \
     qml/squeezeliteqml2/squeezeliteqml2main.qml
 
+RESOURCES += \
+    squeezeliteqml2.qrc
+

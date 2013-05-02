@@ -21,6 +21,16 @@ public:
     explicit DeviceStatus(QWindow *parent = 0);
     void Init(QString serverAddr, QString httpPort);
     CurrentPlayList &getCurrentPlaylist(void) { return m_devicePlayList; }
+
+    int getPlayState(void) { return m_playState; }
+    void setPlayState(int newstate) { m_playState=newstate; }
+    void togglePlayState(void) {
+        if(m_playState==PLAY)
+            m_playState=PAUSE;
+        else        // handles both "PAUSE" and "STOP", which we don't really support
+            m_playState=PLAY;
+    }
+
     
 signals:
     void issueCommand(QByteArray cmd);
@@ -31,6 +41,7 @@ signals:
     void shuffleStatus(QVariant mode);
     void repeatStatus(QVariant mode);
     void progress(QVariant percent);
+    void VolumeChange(QVariant vol);
     
 public slots:
     void processDeviceStatusMsg(QByteArray msg);
@@ -41,7 +52,7 @@ public slots:
     void NewSong();
     void NewPlaylist(void);
     void Mute(bool);
-    void VolumeChange(int);
+    void setVolume(int vol);
     void ModeChange(QString);
 
 private:
@@ -65,6 +76,7 @@ private:
     QByteArray m_deviceVol; // volume (0-100)
     bool m_deviceMute; // is device muted
     QByteArray m_deviceMode; // one of the following: "play", "stop" or "pause"
+    int m_playState;
     QByteArray m_deviceRepeatMode;
     QByteArray m_deviceShuffleMode;
     bool m_isPlaying;
