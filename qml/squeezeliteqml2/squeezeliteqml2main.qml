@@ -604,6 +604,14 @@ Rectangle {
                     }
                 }
 
+                StateButton {
+                    id: statebutton1
+                    x: 171
+                    y: 201
+                    width: 60
+                    height: 60
+                }
+
 
             }
         }

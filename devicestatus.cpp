@@ -366,11 +366,20 @@ void DeviceStatus::NewSong(void)
             controlHierarchy.value("NowPlaying")->rowCount() >= m_devicePlaylistIndex) {
         emit playlistIndexChange(QVariant(m_devicePlaylistIndex));
         TrackData track = getCurrentPlaylist().at(m_devicePlaylistIndex);
-        QString imageURL = QString("http://%1:%2/music/%3/%4")
-                .arg(SqueezeBoxServerAddress)
-                .arg(SqueezeBoxServerHttpPort)
-                .arg(QString(track.coverid))
-                .arg(QString("cover_300x300"));
+        QString imageURL;
+        if(track.coverid.isEmpty()) {
+            imageURL = QString("http://%1:%2/%3")
+                    .arg(SqueezeBoxServerAddress)
+                    .arg(SqueezeBoxServerHttpPort)
+                    .arg(QString("html/images/artists_300x300.png"));
+        }
+        else {
+            imageURL = QString("http://%1:%2/music/%3/%4")
+                    .arg(SqueezeBoxServerAddress)
+                    .arg(SqueezeBoxServerHttpPort)
+                    .arg(QString(track.coverid))
+                    .arg(QString("cover_300x300"));
+        }
         emit updateAlbumCover(QVariant(imageURL));
 
 
